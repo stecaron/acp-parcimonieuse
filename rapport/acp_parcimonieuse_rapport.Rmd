@@ -1,0 +1,27 @@
+---
+title: "ACP Parcimonieuse"
+author: "Stéphane Caron/Sofia Harrouch"
+date: '2018-03-13'
+bibliography: bibliography.bib
+output: 
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Motivation derrière la méthodologie
+
+Application written in the R programming language [@ESL] using the Shiny framework [@Jolliffe2003].
+
+## Description de la méthodologie
+
+## Justification de la méthodologie
+
+## Application de la méthodologie
+
+## Autres éléments pertinents
+
+## Bibliographie
