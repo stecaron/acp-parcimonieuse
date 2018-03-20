@@ -20,7 +20,7 @@ L'analyse en composante principale est une méthode classique de réduction de l
 
 Cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale.
 
-
+test
 
 ## Description de la méthodologie
 
