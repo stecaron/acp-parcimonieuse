@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ## Introduction
@@ -18,12 +18,56 @@ Les méthodes statistiques de réduction de la dimensionnalité ont généraleme
 
 L'analyse en composante principale est une méthode classique de réduction de la dimensionnalité. Cette méthode permet de créer des combinaisons linéaires des différentes variables du jeu de données tout en conservant le plus de variabilité possible. Chacune des nouvelles composantes principales crées possèdent un vecteur de coefficients de saturation (loadings) de dimension $p\text{ x }1$, correspondant en quelque sorte à l'importance attribuée à chacune des différentes variables originales du jeu de données. Il est donc possible d'interpréter ces coefficients de saturation et d'obtenir une interprétation plus généralisée de certaines composantes principales calculées.
 
-Cependant, cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie pour faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
+Cependant, cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permetttant de faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
 
-La méthodologie introduite dans le présent document [@Jolliffe2003] est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes dérivées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie. Finalement, la section 6 aura comme but de conclure brièvement en plus de mentionner d'autres éléments à savoir à propos de la méthodologie.
+La méthodologie introduite dans le présent document [@Jolliffe2003] est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes dérivées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. On pourrait donc dire que cette méthode permet de combiner l'aspect réduction de la dimensionnalité apportée par l'ACP et l'aspect simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
+
+La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie. Finalement, la section 6 aura comme but de conclure brièvement en plus de mentionner d'autres éléments à savoir à propos de la méthodologie.
 
 ## Exemple de motivation
 
+Pour illustrer la motivation derrère la méthodologie, supposons qu'on cherche à simplifier un jeu de données provenant d'un échantillon de 180 coupes de bois de pin afin d'avoir une meilleure compéhension des différentes mesures (variables) impliquées. Les différentes variables du jeu de données en question sont présentées dans le tableau 1. À partir de la matrice de corrélation, il est possible de commencer par faire l'analyse en composante principale et analyser les différentes composantes calculées.
+
+```{r dataset}
+library(elasticnet)
+library(data.table)
+data(pitprops)
+data_description <- data.table(
+  variable = c(paste0("x", seq(1:ncol(pitprops)))),
+  description = c("Diamètre dans le haut de l'arbre (en pouces)", "Longeur (en pouces)", "Humidité (% poids sec)", "Gravité au moment du test", "Nombre d'anneaux dans le haut de l'arbre", "Nombre d'anneaux dans le haut de l'arbre", "Branche principale (en pouces)", "Distance du bout de la branche principale au haut de l'arbre", "Nombre de spires", "Longueur de l'hélice transparente du haut (en pouces)", "Nombre moyen de nœuds par verticille", "Diamètre moyen des noeuds (en pouces)")
+)
+knitr::kable(x = data_description, col.names = c("Variables", "Description"), row.names = FALSE, align = c("c", "l"))
+```
+
+Comme mentionné dans l'introduction, l'ACP consiste essentiellement à trouver des combinaisons linéaires des variables originales du jeu données (disons la matrice $X$) tout en maximisant la variance. En termes plus théoriques, la première composante principale est calculée en maximisant la fonction
+
+$$
+F(\alpha_1) = \alpha_1' \Sigma \alpha_1
+$$
+avec la contrainte que $\alpha_1'\alpha_1=1$. La matrice $\Sigma$ correspond à la matrice de covariance ou à la matrice de corrélation (dépend situation).
+
+Le vecteur $\alpha_1$ correspond au vecteur de coefficients de saturation de la première composante principale. On refait la même chose pour la deuxième composante principale en ajoutant la contrainte que
+
+$$
+cov(\alpha_1'X, \alpha_2'X) = 0
+$$
+Il est également possible de démontrer que si on fait la décomposition en valeurs singulières de la matrice de corrélation (ou covariance), on trouve que les vecteurs $\alpha1, ..., \alpha_p$ correspondent aux vecteurs propres de la matrice $\Sigma$ alors que la variance de chacune des composantes principales correspond aux $p$ valeurs propres de la même matrice $\Sigma$. 
+
+```{r acp}
+options(scipen = 999)
+acp <- prcomp(x = pitprops, center = FALSE)
+
+data_pca <- data.table(
+  variable = c(paste0("x", seq(1:ncol(pitprops))), "Simplicity", "Variance (%)", "Cumulative variance (%)"),
+  PC1 = round(c(as.numeric(acp$rotation[, 1]), 0, acp$sdev[1]/sum(acp$sdev), cumsum(acp$sdev)[1]/sum(acp$sdev)), 3),
+  PC2 = round(c(as.numeric(acp$rotation[, 2]), 0, acp$sdev[2]/sum(acp$sdev), cumsum(acp$sdev)[2]/sum(acp$sdev)), 3),
+  PC3 = round(c(as.numeric(acp$rotation[, 3]), 0, acp$sdev[3]/sum(acp$sdev), cumsum(acp$sdev)[3]/sum(acp$sdev)), 3),
+  PC4 = round(c(as.numeric(acp$rotation[, 4]), 0, acp$sdev[4]/sum(acp$sdev), cumsum(acp$sdev)[4]/sum(acp$sdev)), 3),
+  PC5 = round(c(as.numeric(acp$rotation[, 5]), 0, acp$sdev[5]/sum(acp$sdev), cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
+  PC6 = round(c(as.numeric(acp$rotation[, 6]), 0, acp$sdev[6]/sum(acp$sdev), cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
+)
+knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6))
+```
 
 
 ## Description de la méthodologie
