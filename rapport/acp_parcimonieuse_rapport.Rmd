@@ -71,8 +71,23 @@ knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6
 
 
 ## Description de la mÃ©thodologie
+Comme mentionné précédemment, L'ACP souffre parfois du problème d'interprétation des axes. Pour cela on a recours à une nouvelle méthode **ACP parcimonieuse (SPARSE)** qui nous donne des axes "Sparses" expliqués par un petit nombre des variables; une méthode qui ignore l'effet de certaines variables sur les axes principales.
+Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de ces axes. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principale(SCoTLASS), la deuxième méthode est construit en se basnt sur la propriété de l'erreur de recontruction/ de regression( SPCA) et la dernière méthode est celle obtenue en utilisant la décomposition PMD (PCA).
+
+### La première méthode: SCoTLASS
+Une technique  proposée par I. T. JOLLIFFE (2003), empruntant l'idée de  Tibshiran (1996) du lasso "the least absolute shrinkage and selection operation" qu'on applique d'habitude dans la régresion multiple quand le nombre d'équation est élevée et le problème de l'interprétation se pose. Cette approche est nommé so-Called LASSO permet d'introduire une borne sur la somme des valeurs absolues des coefficients, ces derniers deviennent nul si ils sont inférieur à cette borne.
+
+Soit une ACP sur la matrice de corrélation qui donne une combinaision linéaire $ a'_{k} x$, $(k=1, ...,p)$ des p variables x mesurées, qui ont une variance maximale de $a'_{k}* R * a_{k}$
+
+
+### La deuxième méthode: SPCA
+
+### La troisième méthode: PCA en utilisant la décomposition de PMD
+
+
 
 ## Justification de la mÃ©thodologie
+Des simulations des méthodes!!
 
 ## Application de la mÃ©thodologie
 
