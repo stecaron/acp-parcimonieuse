@@ -36,7 +36,7 @@ data_description <- data.table(
   variable = c(paste0("x", seq(1:ncol(pitprops)))),
   description = c("Diamètre dans le haut de l'arbre (en pouces)", "Longeur (en pouces)", "Humidité (% poids sec)", "Gravité au moment du test", "Nombre d'anneaux dans le haut de l'arbre", "Nombre d'anneaux dans le haut de l'arbre", "Branche principale (en pouces)", "Distance du bout de la branche principale au haut de l'arbre", "Nombre de spires", "Longueur de l'hélice transparente du haut (en pouces)", "Nombre moyen de nœuds par verticille", "Diamètre moyen des noeuds (en pouces)")
 )
-knitr::kable(x = data_description, col.names = c("Variables", "Description"), row.names = FALSE, align = c("c", "l"))
+knitr::kable(x = data_description, col.names = c("Variables", "Description"), row.names = FALSE, align = c("c", "l"), caption = "Tableau 1: Présentation des différentes variables du jeu de données pitprops.")
 ```
 
 Comme mentionné dans l'introduction, l'ACP consiste essentiellement à trouver des combinaisons linéaires des variables originales du jeu données (disons la matrice $X$) tout en maximisant la variance. En termes plus théoriques, la première composante principale est calculée en maximisant la fonction
@@ -51,7 +51,14 @@ Le vecteur $\alpha_1$ correspond au vecteur de coefficients de saturation de la 
 $$
 cov(\alpha_1'X, \alpha_2'X) = 0
 $$
-Il est également possible de démontrer que si on fait la décomposition en valeurs singulières de la matrice de corrélation (ou covariance), on trouve que les vecteurs $\alpha1, ..., \alpha_p$ correspondent aux vecteurs propres de la matrice $\Sigma$ alors que la variance de chacune des composantes principales correspond aux $p$ valeurs propres de la même matrice $\Sigma$. 
+Il est également possible de démontrer que si on fait la décomposition en valeurs singulières de la matrice de corrélation (ou covariance), on trouve que les vecteurs $\alpha1, ..., \alpha_p$ correspondent aux vecteurs propres normés de la matrice $\Sigma$ alors que la variance de chacune des composantes principales correspond aux $p$ valeurs propres de la même matrice $\Sigma$. Ainsi, après avoir fait la décomposition en valeurs et vecteurs propres de la matrice de corrélation, il est possible d'analyser essentiellement deux choses:
+
+1. L'interprétabilité de chacune des composantes principales
+2. L'information conservée à chacune des composantes principales
+
+La première peut être analysée en tentant d'interpréter les coefficients de saturation (vecteurs propres). Pour l'exemple, nous allons quantifier cette composante avec un facteur de simplicité (varimax) qui prend des valeurs entre 0 et 1 où plus le facteur est faible, plus la composante est simple d'interprétation. La deuxième composante peut quant à elle être quantifiée avec la variance expliquée par la composante principale.
+
+Le tableau 2 montre les résultats des 6 premières composantes principales calculés par l'ACP. On garde seulement les 6 premières composantes étant donné qu'elles expliquent plus de 87% de la variabilité totale du jeu de données.
 
 ```{r acp}
 options(scipen = 999)
@@ -59,14 +66,21 @@ acp <- prcomp(x = pitprops, center = FALSE)
 
 data_pca <- data.table(
   variable = c(paste0("x", seq(1:ncol(pitprops))), "Simplicity", "Variance (%)", "Cumulative variance (%)"),
-  PC1 = round(c(as.numeric(acp$rotation[, 1]), 0, acp$sdev[1]/sum(acp$sdev), cumsum(acp$sdev)[1]/sum(acp$sdev)), 3),
-  PC2 = round(c(as.numeric(acp$rotation[, 2]), 0, acp$sdev[2]/sum(acp$sdev), cumsum(acp$sdev)[2]/sum(acp$sdev)), 3),
-  PC3 = round(c(as.numeric(acp$rotation[, 3]), 0, acp$sdev[3]/sum(acp$sdev), cumsum(acp$sdev)[3]/sum(acp$sdev)), 3),
-  PC4 = round(c(as.numeric(acp$rotation[, 4]), 0, acp$sdev[4]/sum(acp$sdev), cumsum(acp$sdev)[4]/sum(acp$sdev)), 3),
-  PC5 = round(c(as.numeric(acp$rotation[, 5]), 0, acp$sdev[5]/sum(acp$sdev), cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
-  PC6 = round(c(as.numeric(acp$rotation[, 6]), 0, acp$sdev[6]/sum(acp$sdev), cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
+  PC1 = round(c(as.numeric(acp$rotation[, 1]), 0, 100*acp$sdev[1]/sum(acp$sdev), 100*cumsum(acp$sdev)[1]/sum(acp$sdev)), 3),
+  PC2 = round(c(as.numeric(acp$rotation[, 2]), 0, 100*acp$sdev[2]/sum(acp$sdev), 100*cumsum(acp$sdev)[2]/sum(acp$sdev)), 3),
+  PC3 = round(c(as.numeric(acp$rotation[, 3]), 0, 100*acp$sdev[3]/sum(acp$sdev), 100*cumsum(acp$sdev)[3]/sum(acp$sdev)), 3),
+  PC4 = round(c(as.numeric(acp$rotation[, 4]), 0, 100*acp$sdev[4]/sum(acp$sdev), 100*cumsum(acp$sdev)[4]/sum(acp$sdev)), 3),
+  PC5 = round(c(as.numeric(acp$rotation[, 5]), 0, 100*acp$sdev[5]/sum(acp$sdev), 100*cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
+  PC6 = round(c(as.numeric(acp$rotation[, 6]), 0, 100*acp$sdev[6]/sum(acp$sdev), 100*cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
 )
-knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6))
+knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.")
+```
+
+
+
+```{r rotation}
+library(psych)
+acp_rotated <- principal(r = pitprops, 6, rotate = "varimax", eps = 1e-14)
 ```
 
 
@@ -75,6 +89,14 @@ knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6
 ## Justification de la méthodologie
 
 ## Application de la méthodologie
+
+```{r spca}
+rpca <- principal(pitprops, nfactors = 6, rotate = "varimax")
+spca_pitprops <- spca(pitprops, K = 6, type = "predictor", sparse = "penalty", para = c(0.06, 0.16, 0.1, 0.1, 0.1, 0.1))
+sapply(1:6, function(i) angle(acp$rotation[, i], spca_pitprops$loadings[, i]))
+sapply(1:6, function(i) angle(acp$rotation[, i], rpca$loadings[, i]))
+```
+
 
 ## Autres éléments pertinents
 
