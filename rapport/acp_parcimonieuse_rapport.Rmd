@@ -63,6 +63,7 @@ La première peut être analysée en tentant d'interpréter les coefficients de 
 Le tableau 2 montre les résultats des 6 premières composantes principales calculés par l'ACP. On garde seulement les 6 premières composantes étant donné qu'elles expliquent plus de 87% de la variabilité totale du jeu de données.
 
 ```{r acp}
+library(kableExtra)
 options(scipen = 999)
 acp <- prcomp(x = pitprops, center = FALSE)
 
@@ -75,7 +76,8 @@ data_pca <- data.table(
   PC5 = round(c(as.numeric(acp$rotation[, 5]), 100*acp$sdev[5]/sum(acp$sdev), 100*cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
   PC6 = round(c(as.numeric(acp$rotation[, 6]), 100*acp$sdev[6]/sum(acp$sdev), 100*cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
 )
-knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.")
+knitr::kable(data_pca, format = "latex", booktabs = T, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
 Dans le tableau 2, on remarque que les premières composantes principales ont beaucoup de coefficients qui se ressemblent, ce qui rend difficile l'interprétation de celles-ci. Pour palier à ce problème, nous pouvons effectuer une rotation de ces composantes principales. Une rotation classique dans ce genre de situation serait la rotation varimax. Cette rotation est de type orthogonale, c'est donc dire que le système de coordonnées actuel ne subit seulement qu'une rotation. La rotation est faite dans le but de rapprocher le plus possible les coefficients de saturation vers 0 ou 1. Le tableau 3 montre les résultats obtenus après avoir effectué la rotation varimax.
@@ -83,24 +85,23 @@ Dans le tableau 2, on remarque que les premières composantes principales ont be
 ```{r rotation}
 library(psych)
 
-# acp_rotated <- principal(pitprops, 6, rotate = "varimax", eps = 1e-14)
-# acp_rotated <- principal(r = pitprops, 6, rotate = "none", eps = 1e-14)
+acp_rotated <- principal(pitprops, 6, rotate = "varimax", eps = 1e-14)
 
-# acp_rotated
-# 
-# data_rpca <- data.table(
-#   variable = c(paste0("x", seq(1:ncol(pitprops))), "Variance (%)", "Cumulative variance (%)"),
-#   PC1 = round(c(as.numeric(acp_rotated_rotated$loadings[, 1]), 100*acp_rotated$sdev[1]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[1]/sum(acp_rotated$sdev)), 3),
-#   PC2 = round(c(as.numeric(acp_rotated$loadings[, 2]), 100*acp_rotated$sdev[2]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[2]/sum(acp_rotated$sdev)), 3),
-#   PC3 = round(c(as.numeric(acp_rotated$loadings[, 3]), 100*acp_rotated$sdev[3]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[3]/sum(acp_rotated$sdev)), 3),
-#   PC4 = round(c(as.numeric(acp_rotated$loadings[, 4]), 100*acp_rotated$sdev[4]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[4]/sum(acp_rotated$sdev)), 3),
-#   PC5 = round(c(as.numeric(acp_rotated$loadings[, 5]), 100*acp_rotated$sdev[5]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[5]/sum(acp_rotated$sdev)), 3),
-#   PC6 = round(c(as.numeric(acp_rotated$loadings[, 6]), 100*acp_rotated$sdev[6]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[6]/sum(acp_rotated$sdev)), 3)
-# )
-# knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.")
+data_rpca <- data.table(
+  variable = c(paste0("x", seq(1:ncol(pitprops))), "Variance (%)", "Cumulative variance (%)"),
+  PC1 = round(c(as.numeric(acp_rotated$loadings[, 1]), 0.28, 0.28), 3),
+  PC2 = round(c(as.numeric(acp_rotated$loadings[, 2]), 0.15, 0.43), 3),
+  PC3 = round(c(as.numeric(acp_rotated$loadings[, 3]), 0.12, 0.56), 3),
+  PC4 = round(c(as.numeric(acp_rotated$loadings[, 4]), 0.12, 0.67), 3),
+  PC5 = round(c(as.numeric(acp_rotated$loadings[, 5]), 0.11, 0.78), 3),
+  PC6 = round(c(as.numeric(acp_rotated$loadings[, 6]), 0.09, 0.87), 3)
+)
+knitr::kable(data_rpca, format = "latex", booktabs = T, row.names = FALSE, col.names = c("", paste0("PC", c(1,2,3,6,5,4))), align = rep("c", 6), caption = "Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops après avoir effectué une rotation orthogonale 'varimax'.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+  
 ```
 
-
+En analysant de plus près le tableau 3, on remarque que la rotation effectuée à permit d'améliorer légèrement l'interprétabilité des premières composantes. Désormais, on remarque que les variables x1 et x2 se démarquent davantage des autres dans la première composante, même chose pour x3 et x4 dans la deuxième composante. Bien que la rotation permet d'améliorer l'interprétabilité, on remarque qu'on perd de la variabilité dans les premières composantes après la rotation. Dans l'ACP classique, les 3 premières composantes expliquaient environ 65% de la variabilité alors que dans le cas de l'ACP avec rotation, les 3 mêmes composantes expliquent environ 56% de la variabilité. De plus, on remarque que ce ne sont plus nécessairement les mêmes composantes qui expliquent successivement le maximum de variabilité. Par exemple, la 4ème composante principale dans l'ACP classique est celle qui explique le moins de variabilité après la rotation. Ces constats sont en quelque sorte les inconvéniants pouvant être rattachés aux rotations et sont également la motivation derrière l'ACP parcimonieuse.
 
 ## Description de la méthodologie
 Comme mentionn? pr?c?demment, L'ACP souffre parfois du probl?me d'interpr?tation des axes. Pour cela on a recours ? une nouvelle m?thode **ACP parcimonieuse (SPARSE)** qui nous donne des axes "Sparses" expliqu?s par un petit nombre des variables; une m?thode qui ignore l'effet de certaines variables sur les axes principales.
@@ -219,10 +220,10 @@ sparse.pca.result
 ## Application de la méthodologie
 
 ```{r spca}
-# rpca <- principal(pitprops, nfactors = 6, rotate = "varimax")
-# spca_pitprops <- spca(pitprops, K = 6, type = "predictor", sparse = "penalty", para = c(0.06, 0.16, 0.1, 0.1, 0.1, 0.1))
-# sapply(1:6, function(i) angle(acp$rotation[, i], spca_pitprops$loadings[, i]))
-# sapply(1:6, function(i) angle(acp$rotation[, i], rpca$loadings[, i]))
+rpca <- principal(pitprops, nfactors = 6, rotate = "varimax")
+spca_pitprops <- spca(pitprops, K = 6, type = "predictor", sparse = "penalty", para = c(0.1, 0.16, 0.1, 0.1, 0.1, 0.1))
+sapply(1:6, function(i) angle(acp$rotation[, i], spca_pitprops$loadings[, i]))
+sapply(1:6, function(i) angle(acp$rotation[, i], rpca$loadings[, i]))
 ```
 
 
