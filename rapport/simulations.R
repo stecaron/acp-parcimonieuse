@@ -23,6 +23,7 @@ vectors_plattes <- matrix(c(-0.455, -0.439, -0.415, 0.434, 0.301, 0.385, 0.336, 
 valeurs_plattes <- c(1.841, 1.709, 0.801, 0.649, 0.520, 0.480)
 
 
+
 # Simuler les données -----------------------------------------------------
 
 
@@ -54,24 +55,24 @@ cov_blocks <- cov_function(vecteurs_propres = vectors_blocks, valeurs_propres = 
 cov_intermediaire <- cov_function(vecteurs_propres = vectors_intermediaires, valeurs_propres = valeurs_intermediaires)
 cov_platte <- cov_function(vecteurs_propres = vectors_plattes, valeurs_propres = valeurs_plattes)
 
-data_blocks <- rmvnorm(10000, mean = rep(0, 6), sigma = cov_blocks)
-data_intermediaire <- rmvnorm(10000, mean = rep(0, 6), sigma = cov_intermediaire)
-data_platte <- rmvnorm(10000, mean = rep(0, 6), sigma = cov_platte)
+data_blocks <- rmvnorm(100000, mean = rep(0, 6), sigma = cov_blocks)
+data_intermediaire <- rmvnorm(100000, mean = rep(0, 6), sigma = cov_intermediaire)
+data_platte <- rmvnorm(100000, mean = rep(0, 6), sigma = cov_platte)
 
 
 # Appliquer les différentes méthodes --------------------------------------
 
-acp_blocks <- prcomp(data_blocks, scale. = TRUE)
-rpca_blocks <- principal(cor(data_blocks), nfactors = 4, rotate = "varimax")
-spca_blocks <- spca(cor(data_intermediaire), K = 4, para = rep(3, 4), sparse = "varnum", type = "Gram")
+acp_blocks <- prcomp(cor(data_blocks), center = FALSE)
+rpca_blocks <- principal(cor(data_blocks), nfactors = 6, rotate = "varimax")
+spca_blocks <- spca(cor(data_blocks), K = 6, para = rep(3,6), sparse = "varnum", type = "Gram")
 
-acp_intermediaire <- prcomp(cor(data_intermediaire), center = TRUE, scale. = TRUE)
-rpca_intermediaire <- principal(cor(data_intermediaire), nfactors = 4, rotate = "varimax")
-spca_intermediaire <- spca(cor(data_intermediaire), K = 4, para = rep(6, 4), sparse = "varnum")
+acp_intermediaire <- prcomp(cor(data_intermediaire), center = FALSE)
+rpca_intermediaire <- principal(cor(data_intermediaire), nfactors = 6, rotate = "varimax")
+spca_intermediaire <- spca(cor(data_intermediaire), K = 6, para = rep(0.01, 6), sparse = "penalty", type = "Gram")
 
-acp_platte <- prcomp(cor(data_platte), center = TRUE, scale. = TRUE)
-rpca_platte <- principal(cor(data_platte), nfactors = 4, rotate = "varimax")
-spca_platte <- spca(cor(data_platte), K = 4, para = rep(6, 4), sparse = "varnum")
+acp_platte <- prcomp(cor(data_platte), center = FALSE)
+rpca_platte <- principal(cor(data_platte), nfactors = 6, rotate = "varimax")
+spca_platte <- spca(cor(data_platte), K = 6, para = rep(0.01, 6), sparse = "penalty", type = "Gram")
 
 # Analyser les performances -----------------------------------------------
 
@@ -83,45 +84,42 @@ angle <- function(x,y){
   as.numeric(theta)
 }
 
-theta <- acos( sum(a*b) / ( sqrt(sum(a * a)) * sqrt(sum(b * b)) ) )
+dist_loadings <- function(x,y){
+  sqrt(1 - (t(x) %*% y)^2)
+}
 
-sapply(1:4, function(i) {
-  angle(rpca_blocks$loadings[,i], vectors_blocks[,i]) 
+# Structure blocks
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_blocks$rotation[,x], vectors_blocks[,x])
+# })
+sapply(1:6, function(x) {
+  dist_loadings(rpca_blocks$loadings[,x], vectors_blocks[,x])
+})
+sapply(1:6, function(x) {
+  dist_loadings(spca_blocks$loadings[,x], vectors_blocks[,x])
 })
 
-sapply(1:4, function(x) {
-  angle(-acp_blocks$rotation[,x], vectors_blocks[,x]) 
+# Structure intermediaire
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_intermediaire$rotation[,x], vectors_intermediaires[,x])
+# })
+sapply(1:6, function(x) {
+  dist_loadings(rpca_intermediaire$loadings[,x], vectors_intermediaires[,x])
+})
+sapply(1:6, function(x) {
+  dist_loadings(spca_intermediaire$loadings[,x], vectors_intermediaires[,x])
 })
 
-sapply(1:4, function(x) {
-  angle(spca_blocks$loadings[,x], vectors_blocks[,x]) 
+# Structure platte
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_plattes$rotation[,x], vectors_plattes[,x])
+# })
+sapply(1:6, function(x) {
+  dist_loadings(rpca_platte$loadings[,x], vectors_plattes[,x])
 })
-
-
-sapply(1:4, function(x) {
-  angle(rpca_intermediaire$loadings[,x], vectors_intermediaires[,x]) 
+sapply(1:6, function(x) {
+  dist_loadings(spca_platte$loadings[,x], vectors_plattes[,x])
 })
-
-sapply(1:4, function(x) {
-  angle(acp_intermediaire$rotation[,x], vectors_intermediaires[,x]) 
-})
-
-sapply(1:4, function(x) {
-  angle(spca_intermediaire$loadings[,x], vectors_intermediaires[,x]) 
-})
-
-sapply(1:4, function(x) {
-  angle(rpca_platte$loadings[,x], vectors_platte[,x]) 
-})
-
-sapply(1:4, function(x) {
-  angle(acp_platte$rotation[,x], vectors_platte[,x]) 
-})
-
-sapply(1:4, function(x) {
-  angle(spca_platte$loadings[,x], vectors_platte[,x]) 
-})
-
 
 
 
