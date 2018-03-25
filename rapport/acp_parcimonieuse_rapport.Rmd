@@ -1,14 +1,13 @@
 ---
 title: "ACP Parcimonieuse"
-author: "St�f©phane Caron/Sofia Harrouch"
+author: "Stéphane Caron/Sofia Harrouch"
 date: '2018-03-13'
+bibliography: bibliography.bib
 output:
-  html_document:
-    df_print: paged
-    toc: yes
   pdf_document:
     toc: yes
-bibliography: bibliography.bib
+    includes:
+            in_header: packages.sty
 ---
 
 ```{r setup, include=FALSE}
@@ -19,11 +18,11 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 Les méthodes statistiques de réduction de la dimensionnalité ont généralement comme objectif de réduire la dimension d'un jeu de données dans le but de simplifier l'interprétation des données, de permettre la visualisation des donnnées ou même de d'améliorer la performance de certaines méthodes appliquées sur ces données réduites. En termes simples, réduire la dimensionnalité revient à réduire le nombre de variables (p) mesurées.
 
-L'analyse en composante principale est une méthode classique de réduction de la dimensionnalité. Cette méthode permet de créer des combinaisons linéaires des différentes variables du jeu de données tout en conservant le plus de variabilité possible. Chacune des nouvelles composantes principales crées possèdent un vecteur de coefficients de saturation (loadings) de dimension $p\text{ x }1$, correspondant en quelque sorte à l'importance attribuée à chacune des différentes variables originales du jeu de données. Il est donc possible d'interpréter ces coefficients de saturation et d'obtenir une interprétation plus généralisée de certaines composantes principales calculées.
+L'analyse en composante principale est une méthode classique de réduction de la dimensionnalité. Cette méthode permet de créer des combinaisons linéaires des différentes variables du jeu de données tout en conservant le plus de variabilité possible. Chacune des nouvelles composantes principales créées possèdent un vecteur de coefficients de saturation (loadings) de dimension $p\text{ x }1$, correspondant en quelque sorte à l'importance attribuée à chacune des différentes variables originales du jeu de données. Il est donc possible d'interpréter ces coefficients de saturation et d'obtenir une interprétation plus généralisée de certaines composantes principales calculées.
 
-Cependant, cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permetttant de faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
+Cependant, cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement de restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permetttant de faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
 
-La méthodologie introduite dans le présent document [@Jolliffe2003] est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes dérivées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. On pourrait donc dire que cette méthode permet de combiner l'aspect réduction de la dimensionnalité apportée par l'ACP et l'aspect simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
+La méthodologie introduite dans le présent document [@Jolliffe2003] est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes calculées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. On pourrait donc dire que cette méthode permet de combiner l'aspect réduction de la dimensionnalité apportée par l'ACP et l'aspect simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
 
 La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie. Finalement, la section 6 aura comme but de conclure brièvement en plus de mentionner d'autres éléments à savoir à propos de la méthodologie.
 
@@ -39,7 +38,7 @@ data_description <- data.table(
   variable = c(paste0("x", seq(1:ncol(pitprops)))),
   description = c("Diamètre dans le haut de l'arbre (en pouces)", "Longeur (en pouces)", "Humidité (% poids sec)", "Gravité au moment du test", "Nombre d'anneaux dans le haut de l'arbre", "Nombre d'anneaux dans le haut de l'arbre", "Branche principale (en pouces)", "Distance du bout de la branche principale au haut de l'arbre", "Nombre de spires", "Longueur de l'hélice transparente du haut (en pouces)", "Nombre moyen de nœuds par verticille", "Diamètre moyen des noeuds (en pouces)")
 )
-knitr::kable(x = data_description, col.names = c("Variables", "Description"), row.names = FALSE, align = c("c", "l"), caption = "Tableau 1: Présentation des différentes variables du jeu de données pitprops.")
+knitr::kable(x = data_description, col.names = c("Variables", "Description"), row.names = FALSE, align = c("c", "l"), caption = "Présentation des différentes variables du jeu de données pitprops.")
 ```
 
 Comme mentionné dans l'introduction, l'ACP consiste essentiellement à trouver des combinaisons linéaires des variables originales du jeu données (disons la matrice $X$) tout en maximisant la variance. En termes plus théoriques, la première composante principale est calculée en maximisant la fonction
@@ -54,12 +53,12 @@ Le vecteur $\alpha_1$ correspond au vecteur de coefficients de saturation de la 
 $$
 cov(\alpha_1'X, \alpha_2'X) = 0
 $$
-Il est également possible de démontrer que si on fait la décomposition en valeurs singulières de la matrice de corrélation (ou covariance), on trouve que les vecteurs $\alpha1, ..., \alpha_p$ correspondent aux vecteurs propres normés de la matrice $\Sigma$ alors que la variance de chacune des composantes principales correspond aux $p$ valeurs propres de la même matrice $\Sigma$. Ainsi, après avoir fait la décomposition en valeurs et vecteurs propres de la matrice de corrélation, il est possible d'analyser essentiellement deux choses:
+Il est également possible de démontrer que si on fait la décomposition en valeurs singulières de la matrice de corrélation (ou covariance), on trouve que les vecteurs $\alpha_1, ..., \alpha_p$ correspondent aux vecteurs propres normés de la matrice $\Sigma$ alors que la variance de chacune des composantes principales correspond aux $p$ valeurs propres de la même matrice $\Sigma$. Ainsi, après avoir fait la décomposition en valeurs et vecteurs propres de la matrice de corrélation, il est possible d'analyser essentiellement deux choses:
 
 1. L'interprétabilité de chacune des composantes principales
 2. L'information conservée à chacune des composantes principales
 
-La première peut être analysée en tentant d'interpréter les coefficients de saturation (vecteurs propres). Pour l'exemple, nous allons quantifier cette composante avec un facteur de simplicité (varimax) qui prend des valeurs entre 0 et 1 où plus le facteur est faible, plus la composante est simple d'interprétation. La deuxième composante peut quant à elle être quantifiée avec la variance expliquée par la composante principale.
+La première peut être analysée en tentant d'interpréter les coefficients de saturation (vecteurs propres). Plus il y a de coefficients similaires, plus la composante est difficile à interpréter. À l'extrême, le cas le plus simple serait le cas où seulement un seul coefficient ne serait pas égale à 0. Dans ce cas-ci, la composante serait effectivement facile à interpréter, mais il y aurait probablement beaucoup de perte d'information (peu de variance exepliquée), ce qui n'est pas nécésssairement désiré. L'information conservée à chacune des composantes peut quant à elle être quantifiée avec la variance expliquée par la composante principale.
 
 Le tableau 2 montre les résultats des 6 premières composantes principales calculés par l'ACP. On garde seulement les 6 premières composantes étant donné qu'elles expliquent plus de 87% de la variabilité totale du jeu de données.
 
@@ -68,91 +67,106 @@ options(scipen = 999)
 acp <- prcomp(x = pitprops, center = FALSE)
 
 data_pca <- data.table(
-  variable = c(paste0("x", seq(1:ncol(pitprops))), "Simplicity", "Variance (%)", "Cumulative variance (%)"),
-  PC1 = round(c(as.numeric(acp$rotation[, 1]), 0, 100*acp$sdev[1]/sum(acp$sdev), 100*cumsum(acp$sdev)[1]/sum(acp$sdev)), 3),
-  PC2 = round(c(as.numeric(acp$rotation[, 2]), 0, 100*acp$sdev[2]/sum(acp$sdev), 100*cumsum(acp$sdev)[2]/sum(acp$sdev)), 3),
-  PC3 = round(c(as.numeric(acp$rotation[, 3]), 0, 100*acp$sdev[3]/sum(acp$sdev), 100*cumsum(acp$sdev)[3]/sum(acp$sdev)), 3),
-  PC4 = round(c(as.numeric(acp$rotation[, 4]), 0, 100*acp$sdev[4]/sum(acp$sdev), 100*cumsum(acp$sdev)[4]/sum(acp$sdev)), 3),
-  PC5 = round(c(as.numeric(acp$rotation[, 5]), 0, 100*acp$sdev[5]/sum(acp$sdev), 100*cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
-  PC6 = round(c(as.numeric(acp$rotation[, 6]), 0, 100*acp$sdev[6]/sum(acp$sdev), 100*cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
+  variable = c(paste0("x", seq(1:ncol(pitprops))), "Variance (%)", "Cumulative variance (%)"),
+  PC1 = round(c(as.numeric(acp$rotation[, 1]), 100*acp$sdev[1]/sum(acp$sdev), 100*cumsum(acp$sdev)[1]/sum(acp$sdev)), 3),
+  PC2 = round(c(as.numeric(acp$rotation[, 2]), 100*acp$sdev[2]/sum(acp$sdev), 100*cumsum(acp$sdev)[2]/sum(acp$sdev)), 3),
+  PC3 = round(c(as.numeric(acp$rotation[, 3]), 100*acp$sdev[3]/sum(acp$sdev), 100*cumsum(acp$sdev)[3]/sum(acp$sdev)), 3),
+  PC4 = round(c(as.numeric(acp$rotation[, 4]), 100*acp$sdev[4]/sum(acp$sdev), 100*cumsum(acp$sdev)[4]/sum(acp$sdev)), 3),
+  PC5 = round(c(as.numeric(acp$rotation[, 5]), 100*acp$sdev[5]/sum(acp$sdev), 100*cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
+  PC6 = round(c(as.numeric(acp$rotation[, 6]), 100*acp$sdev[6]/sum(acp$sdev), 100*cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
 )
 knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.")
 ```
 
-
+Dans le tableau 2, on remarque que les premières composantes principales ont beaucoup de coefficients qui se ressemblent, ce qui rend difficile l'interprétation de celles-ci. Pour palier à ce problème, nous pouvons effectuer une rotation de ces composantes principales. Une rotation classique dans ce genre de situation serait la rotation varimax. Cette rotation est de type orthogonale, c'est donc dire que le système de coordonnées actuel ne subit seulement qu'une rotation. La rotation est faite dans le but de rapprocher le plus possible les coefficients de saturation vers 0 ou 1. Le tableau 3 montre les résultats obtenus après avoir effectué la rotation varimax.
 
 ```{r rotation}
 library(psych)
-acp_rotated <- principal(r = pitprops, 6, rotate = "varimax", eps = 1e-14)
+
+# acp_rotated <- principal(pitprops, 6, rotate = "varimax", eps = 1e-14)
+# acp_rotated <- principal(r = pitprops, 6, rotate = "none", eps = 1e-14)
+
+# acp_rotated
+# 
+# data_rpca <- data.table(
+#   variable = c(paste0("x", seq(1:ncol(pitprops))), "Variance (%)", "Cumulative variance (%)"),
+#   PC1 = round(c(as.numeric(acp_rotated_rotated$loadings[, 1]), 100*acp_rotated$sdev[1]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[1]/sum(acp_rotated$sdev)), 3),
+#   PC2 = round(c(as.numeric(acp_rotated$loadings[, 2]), 100*acp_rotated$sdev[2]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[2]/sum(acp_rotated$sdev)), 3),
+#   PC3 = round(c(as.numeric(acp_rotated$loadings[, 3]), 100*acp_rotated$sdev[3]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[3]/sum(acp_rotated$sdev)), 3),
+#   PC4 = round(c(as.numeric(acp_rotated$loadings[, 4]), 100*acp_rotated$sdev[4]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[4]/sum(acp_rotated$sdev)), 3),
+#   PC5 = round(c(as.numeric(acp_rotated$loadings[, 5]), 100*acp_rotated$sdev[5]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[5]/sum(acp_rotated$sdev)), 3),
+#   PC6 = round(c(as.numeric(acp_rotated$loadings[, 6]), 100*acp_rotated$sdev[6]/sum(acp_rotated$sdev), 100*cumsum(acp_rotated$sdev)[6]/sum(acp_rotated$sdev)), 3)
+# )
+# knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.")
 ```
 
 
+
 ## Description de la méthodologie
-Comme mentionn� pr�c�demment, L'ACP souffre parfois du probl�me d'interpr�tation des axes. Pour cela on a recours � une nouvelle m�thode **ACP parcimonieuse (SPARSE)** qui nous donne des axes "Sparses" expliqu�s par un petit nombre des variables; une m�thode qui ignore l'effet de certaines variables sur les axes principales.
-Dans cette section, on expliquera les diff�rentes m�thodes propos�es pour l'estimation de ces axes. La premi�re m�thode est bas�e sur la propri�t� d'obtention d'une variance maximale des composantes principale(SCoTLASS), la deuxi�me m�thode est construit en se basant sur la propri�t� de l'erreur de recontruction/ de regression( SPCA) et la derni�re m�thode est celle obtenue en utilisant la d�composition PMD (PCA).
+Comme mentionn? pr?c?demment, L'ACP souffre parfois du probl?me d'interpr?tation des axes. Pour cela on a recours ? une nouvelle m?thode **ACP parcimonieuse (SPARSE)** qui nous donne des axes "Sparses" expliqu?s par un petit nombre des variables; une m?thode qui ignore l'effet de certaines variables sur les axes principales.
+Dans cette section, on expliquera les diff?rentes m?thodes propos?es pour l'estimation de ces axes. La premi?re m?thode est bas?e sur la propri?t? d'obtention d'une variance maximale des composantes principale(SCoTLASS), la deuxi?me m?thode est construit en se basant sur la propri?t? de l'erreur de recontruction/ de regression( SPCA) et la derni?re m?thode est celle obtenue en utilisant la d?composition PMD (PCA).
 
 ### L'approche du Lasso en ACP: SCoTLASS
-Une technique  propos�e par I. T. JOLLIFFE (2003), empruntant l'id�e de  Tibshiran (1996) du lasso "the least absolute shrinkage and selection operation" qu'on applique d'habitude dans la r�gresion multiple quand le nombre d'�quation est �lev�e et le probl�me de l'interpr�tation se pose. Cette approche est nomm� "Simplifed Component Technique LASSO"" permet d'introduire une borne sur la somme des valeurs absolues des coefficients, ces derniers deviennent nul s'ils sont inf�rieurs � cette borne.
+Une technique  propos?e par I. T. JOLLIFFE (2003), empruntant l'id?e de  Tibshiran (1996) du lasso "the least absolute shrinkage and selection operation" qu'on applique d'habitude dans la r?gresion multiple quand le nombre d'?quation est ?lev?e et le probl?me de l'interpr?tation se pose. Cette approche est nomm? "Simplifed Component Technique LASSO"" permet d'introduire une borne sur la somme des valeurs absolues des coefficients, ces derniers deviennent nul s'ils sont inf?rieurs ? cette borne.
 
-Soit X le jeu de donn�es $X=(X_{1}, .., X_{p})^{T}$, sa matrice de corr�lation $R= corr(X)$ 
-Soit une ACP sur la matrice de corr�lation qui donne les composantes principales qui sont des combinaisions lin�aires des p variables mesur�es de  soit $Y_{k}= a'_{k} X = \sum_{i=1}^{p} a_{ki} X_{i}$, $(k=1, ...,p)$. On note ensuite la variance de l'axe principale $Y_{k}$ par $var(Y_{k})=a'_{k}* R * a_{k}$.
-le probl�me de maximisation de l'ACP pour conserver la plus grande quantit� d'information possible est:
+Soit X le jeu de donn?es $X=(X_{1}, .., X_{p})^{T}$, sa matrice de corr?lation $R= corr(X)$ 
+Soit une ACP sur la matrice de corr?lation qui donne les composantes principales qui sont des combinaisions lin?aires des p variables mesur?es de  soit $Y_{k}= a'_{k} X = \sum_{i=1}^{p} a_{ki} X_{i}$, $(k=1, ...,p)$. On note ensuite la variance de l'axe principale $Y_{k}$ par $var(Y_{k})=a'_{k}* R * a_{k}$.
+le probl?me de maximisation de l'ACP pour conserver la plus grande quantit? d'information possible est:
 $$
-\begin{align}
-\text{max  }  a'_{k}* R * a_{k} \\
+\text{max  }  a'_{k}* R * a_{k}
+$$
+
+$$
 s/c
 \bigg\{
-\begin{array}
-aa'_{k}* a_{k} = 1, &(k \geq 2)\\
-a'_{h}* a_{k} = 0, &(h \geq k)\\
-\end{array}
-\end{align}
+  \begin{array}{lr}
+    aa'_{k} \times a_{k} = 1, &(k \geq 2) \\
+    a'_{h} \times a_{k} = 0, &(h \geq k) \\
+  \end{array}
 $$
 
 
-La m�thode du lasso appliqu� � l'asso'ACP, rajoute une troisi�me contrainte sur les coefficients des variables sur les axes.
+La m?thode du lasso appliqu? ? l'asso'ACP, rajoute une troisi?me contrainte sur les coefficients des variables sur les axes.
 $$
-\begin{align}
 \sum_{j=1}^{p} |a_{kj}| \leq t
-\end{align}
 $$
 
-Dans cette m�thode, il n y a pas de r�gle ni d'orientation pour le choix de t, ce t qu' � partir duquel on ignore la significativit� des variables initiales sur les axes. � titre indicatif, on a:
-1. pour t $\geq \sqrt{p} $, on a l'ACP.
-2. pour t $\leq 1 $, il n'existe pas de solution.
+Dans cette m?thode, il n y a pas de r?gle ni d'orientation pour le choix de t, ce t qu' ? partir duquel on ignore la significativit? des variables initiales sur les axes. ? titre indicatif, on a:
+1. pour t $\geq \sqrt{p}$, on a l'ACP.
+2. pour t $\leq 1$, il n'existe pas de solution.
 3. pour t=1, on a exactement une valeur non nulle de $a_{kj}$ pour chaque k.
-Donc on choisit des valeurs diff�rentes de t  ce qui a comme cons�quence un co�t �lev� de calcul, une probl�me d'optimisation non convexe. Sans oublier aussi le fait que cette m�thode ne nous fournisse pas vraiment des vecteurs propres assez sparses quand le besoin d'un grand pourcentage de la variance expliqu�e est exprim�, on se trouve donc dans une situation de compromis entre le pourcentage de variance expliqu�e et  l'interpr�tation des variables.
+Donc on choisit des valeurs diff?rentes de t  ce qui a comme cons?quence un co?t ?lev? de calcul, une probl?me d'optimisation non convexe. Sans oublier aussi le fait que cette m?thode ne nous fournisse pas vraiment des vecteurs propres assez sparses quand le besoin d'un grand pourcentage de la variance expliqu?e est exprim?, on se trouve donc dans une situation de compromis entre le pourcentage de variance expliqu?e et  l'interpr?tation des variables.
 
 
 ### SPCA: Sparse Principal Component Analysis
 Dans cette partie, on introduit une autre approche estimant les composantes principales tout en rendant les vecteurs parcimonieux (sparse).
-L'ACP peut �tre r�ecrite comme un probl�me d'optimisation d'une r�gression en imposant une p�nalit� quadratique: la p�nalit� du Lasso via l'Elastic net.
-En fait, chaque composante principale est �crite comme une combinaison lin�aire des p variables, donc les coefficients des variables sur les CPs peuvent �tre obtenus en regressant la CPs sur ces p variables.
-Apr�s l'application de l'ACP sur notre jeu de donn�e, on reconstruit les facteurs (loadings) par une regression ridge, cette m�thode d�pend des r�sultats obtenus de l'ACP(post ACP).
+L'ACP peut ?tre r?ecrite comme un probl?me d'optimisation d'une r?gression en imposant une p?nalit? quadratique: la p?nalit? du Lasso via l'Elastic net.
+En fait, chaque composante principale est ?crite comme une combinaison lin?aire des p variables, donc les coefficients des variables sur les CPs peuvent ?tre obtenus en regressant la CPs sur ces p variables.
+Apr?s l'application de l'ACP sur notre jeu de donn?e, on reconstruit les facteurs (loadings) par une regression ridge, cette m?thode d?pend des r?sultats obtenus de l'ACP(post ACP).
 
 On note $Y_{i}$ la composante principale, $\lambda$ positive, l'estimateur de ridge est:
 $$\hat{\beta}_{ridge}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2 $$
 
 Soit $\hat{v}=\frac{\hat{\beta}_{ridge}}{||\hat{\beta}_{ridge}||}$, donc $\hat{v}=V_{i}$
-Cette p�nalit� de ridge n'en n'est pas vraiment une, elle sert simplement � reconstruire les composantes.
+Cette p?nalit? de ridge n'en n'est pas vraiment une, elle sert simplement ? reconstruire les composantes.
 
-Ensuite, la m�thode rajoute une nouvelle p�nalit� $L_{1}$;, la p�nalit� de Lasso, � l'equation pr�cedante, ce qui donne un nouveau probl�me d'optimisation:
+Ensuite, la m?thode rajoute une nouvelle p?nalit? $L_{1}$;, la p?nalit? de Lasso, ? l'equation pr?cedante, ce qui donne un nouveau probl?me d'optimisation:
 
 $$\hat{\beta}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2+\lambda_{1} ||\beta||_{1} $$
 
-telle que: $||\beta||_{1}= \sum_{j=1}^{p}|\beta_{j}|$ est la norme 1 de $\beta$. On appelle $\hat{V}_{i}= \frac{\hat{\beta}}{||\hat{\beta}||}$ l'approximation de $V_{i}$, et la $X\hat{V}_{i}$ la i�me composante principale approxim�e.
+telle que: $||\beta||_{1}= \sum_{j=1}^{p}|\beta_{j}|$ est la norme 1 de $\beta$. On appelle $\hat{V}_{i}= \frac{\hat{\beta}}{||\hat{\beta}||}$ l'approximation de $V_{i}$, et la $X\hat{V}_{i}$ la i?me composante principale approxim?e.
 
-Dans notre cas, on consid�re les k premiers CPs. Soit $A_{p*k}=[\alpha_{1}, \alpha_{2}, ....,\alpha_{k}]$ et $B_{p*k}=[\beta_{1}, \beta_{2}, ....,\beta_{k}]$
+Dans notre cas, on consid?re les k premiers CPs. Soit $A_{p*k}=[\alpha_{1}, \alpha_{2}, ....,\alpha_{k}]$ et $B_{p*k}=[\beta_{1}, \beta_{2}, ....,\beta_{k}]$
 
-Le probl�me d'optimisation g�narlis� obtenu est:
+Le probl?me d'optimisation g?narlis? obtenu est:
 $$(\hat{A},\hat{B})=argmin \sum_{i=1}^{n} ||X_{i} -AB^{T}X_{i}||^2 + \sum_{j=1}^{k} |\beta_{j}||^2 + \sum_{j=1}^{k} \lambda_{1,j} ||\beta_{j}||_{1} $$
 sous la contrainte $$A^T A = I_{k*k}$$
 
 
 ## Justification de la méthodologie
 ## Justification de la méthodologie
-DAns cette partie on va comparer la performance des deux m�thodes ScotLASS et SPCA.
-On consid�re trois facteurs: 
+DAns cette partie on va comparer la performance des deux m?thodes ScotLASS et SPCA.
+On consid?re trois facteurs: 
 $$
 V_{1} \sim N(0,290) \\
 V_{2} \sim N(0,300)\\
@@ -205,10 +219,10 @@ sparse.pca.result
 ## Application de la méthodologie
 
 ```{r spca}
-rpca <- principal(pitprops, nfactors = 6, rotate = "varimax")
-spca_pitprops <- spca(pitprops, K = 6, type = "predictor", sparse = "penalty", para = c(0.06, 0.16, 0.1, 0.1, 0.1, 0.1))
-sapply(1:6, function(i) angle(acp$rotation[, i], spca_pitprops$loadings[, i]))
-sapply(1:6, function(i) angle(acp$rotation[, i], rpca$loadings[, i]))
+# rpca <- principal(pitprops, nfactors = 6, rotate = "varimax")
+# spca_pitprops <- spca(pitprops, K = 6, type = "predictor", sparse = "penalty", para = c(0.06, 0.16, 0.1, 0.1, 0.1, 0.1))
+# sapply(1:6, function(i) angle(acp$rotation[, i], spca_pitprops$loadings[, i]))
+# sapply(1:6, function(i) angle(acp$rotation[, i], rpca$loadings[, i]))
 ```
 
 
