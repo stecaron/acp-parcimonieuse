@@ -1,11 +1,14 @@
 ---
 title: "ACP Parcimonieuse"
-author: "StÃ©phane Caron/Sofia Harrouch"
+author: "StÃfÂ©phane Caron/Sofia Harrouch"
 date: '2018-03-13'
-bibliography: bibliography.bib
-output: 
+output:
+  html_document:
+    df_print: paged
+    toc: yes
   pdf_document:
     toc: yes
+bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -72,22 +75,118 @@ knitr::kable(data_pca, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6
 
 ## Description de la mÃ©thodologie
 Comme mentionné précédemment, L'ACP souffre parfois du problème d'interprétation des axes. Pour cela on a recours à une nouvelle méthode **ACP parcimonieuse (SPARSE)** qui nous donne des axes "Sparses" expliqués par un petit nombre des variables; une méthode qui ignore l'effet de certaines variables sur les axes principales.
-Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de ces axes. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principale(SCoTLASS), la deuxième méthode est construit en se basnt sur la propriété de l'erreur de recontruction/ de regression( SPCA) et la dernière méthode est celle obtenue en utilisant la décomposition PMD (PCA).
+Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de ces axes. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principale(SCoTLASS), la deuxième méthode est construit en se basant sur la propriété de l'erreur de recontruction/ de regression( SPCA) et la dernière méthode est celle obtenue en utilisant la décomposition PMD (PCA).
 
-### La première méthode: SCoTLASS
-Une technique  proposée par I. T. JOLLIFFE (2003), empruntant l'idée de  Tibshiran (1996) du lasso "the least absolute shrinkage and selection operation" qu'on applique d'habitude dans la régresion multiple quand le nombre d'équation est élevée et le problème de l'interprétation se pose. Cette approche est nommé so-Called LASSO permet d'introduire une borne sur la somme des valeurs absolues des coefficients, ces derniers deviennent nul si ils sont inférieur à cette borne.
+### L'approche du Lasso en ACP: SCoTLASS
+Une technique  proposée par I. T. JOLLIFFE (2003), empruntant l'idée de  Tibshiran (1996) du lasso "the least absolute shrinkage and selection operation" qu'on applique d'habitude dans la régresion multiple quand le nombre d'équation est élevée et le problème de l'interprétation se pose. Cette approche est nommé "Simplifed Component Technique LASSO"" permet d'introduire une borne sur la somme des valeurs absolues des coefficients, ces derniers deviennent nul s'ils sont inférieurs à cette borne.
 
-Soit une ACP sur la matrice de corrélation qui donne une combinaision linéaire $ a'_{k} x$, $(k=1, ...,p)$ des p variables x mesurées, qui ont une variance maximale de $a'_{k}* R * a_{k}$
+Soit X le jeu de données $X=(X_{1}, .., X_{p})^{T}$, sa matrice de corrélation $R= corr(X)$ 
+Soit une ACP sur la matrice de corrélation qui donne les composantes principales qui sont des combinaisions linéaires des p variables mesurées de  soit $Y_{k}= a'_{k} X = \sum_{i=1}^{p} a_{ki} X_{i}$, $(k=1, ...,p)$. On note ensuite la variance de l'axe principale $Y_{k}$ par $var(Y_{k})=a'_{k}* R * a_{k}$.
+le problème de maximisation de l'ACP pour conserver la plus grande quantité d'information possible est:
+$$
+\begin{align}
+\text{max  }  a'_{k}* R * a_{k} \\
+s/c
+\bigg\{
+\begin{array}
+aa'_{k}* a_{k} = 1, &(k \geq 2)\\
+a'_{h}* a_{k} = 0, &(h \geq k)\\
+\end{array}
+\end{align}
+$$
 
 
-### La deuxième méthode: SPCA
+La méthode du lasso appliqué à l'asso'ACP, rajoute une troisième contrainte sur les coefficients des variables sur les axes.
+$$
+\begin{align}
+\sum_{j=1}^{p} |a_{kj}| \leq t
+\end{align}
+$$
 
-### La troisième méthode: PCA en utilisant la décomposition de PMD
+Dans cette méthode, il n y a pas de règle ni d'orientation pour le choix de t, ce t qu' à partir duquel on ignore la significativité des variables initiales sur les axes. à titre indicatif, on a:
+1. pour t $\geq \sqrt{p} $, on a l'ACP.
+2. pour t $\leq 1 $, il n'existe pas de solution.
+3. pour t=1, on a exactement une valeur non nulle de $a_{kj}$ pour chaque k.
+Donc on choisit des valeurs différentes de t  ce qui a comme conséquence un coût élevé de calcul, une problème d'optimisation non convexe. Sans oublier aussi le fait que cette méthode ne nous fournisse pas vraiment des vecteurs propres assez sparses quand le besoin d'un grand pourcentage de la variance expliquée est exprimé, on se trouve donc dans une situation de compromis entre le pourcentage de variance expliquée et  l'interprétation des variables.
 
+
+### SPCA: Sparse Principal Component Analysis
+Dans cette partie, on introduit une autre approche estimant les composantes principales tout en rendant les vecteurs parcimonieux (sparse).
+L'ACP peut être réecrite comme un problème d'optimisation d'une régression en imposant une pénalité quadratique: la pénalité du Lasso via l'Elastic net.
+En fait, chaque composante principale est écrite comme une combinaison linéaire des p variables, donc les coefficients des variables sur les CPs peuvent être obtenus en regressant la CPs sur ces p variables.
+Aprés l'application de l'ACP sur notre jeu de donnée, on reconstruit les facteurs (loadings) par une regression ridge, cette méthode dépend des résultats obtenus de l'ACP(post ACP).
+
+On note $Y_{i}$ la composante principale, $\lambda$ positive, l'estimateur de ridge est:
+$$\hat{\beta}_{ridge}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2 $$
+
+Soit $\hat{v}=\frac{\hat{\beta}_{ridge}}{||\hat{\beta}_{ridge}||}$, donc $\hat{v}=V_{i}$
+Cette pénalité de ridge n'en n'est pas vraiment une, elle sert simplement à reconstruire les composantes.
+
+Ensuite, la méthode rajoute une nouvelle pénalité $L_{1}$;, la pénalité de Lasso, à l'equation précedante, ce qui donne un nouveau problème d'optimisation:
+
+$$\hat{\beta}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2+\lambda_{1} ||\beta||_{1} $$
+
+telle que: $||\beta||_{1}= \sum_{j=1}^{p}|\beta_{j}|$ est la norme 1 de $\beta$. On appelle $\hat{V}_{i}= \frac{\hat{\beta}}{||\hat{\beta}||}$ l'approximation de $V_{i}$, et la $X\hat{V}_{i}$ la ième composante principale approximée.
+
+Dans notre cas, on considère les k premiers CPs. Soit $A_{p*k}=[\alpha_{1}, \alpha_{2}, ....,\alpha_{k}]$ et $B_{p*k}=[\beta_{1}, \beta_{2}, ....,\beta_{k}]$
+
+Le problème d'optimisation génarlisé obtenu est:
+$$(\hat{A},\hat{B})=argmin \sum_{i=1}^{n} ||X_{i} -AB^{T}X_{i}||^2 + \sum_{j=1}^{k} |\beta_{j}||^2 + \sum_{j=1}^{k} \lambda_{1,j} ||\beta_{j}||_{1} $$
+sous la contrainte $$A^T A = I_{k*k}$$
 
 
 ## Justification de la mÃ©thodologie
-Des simulations des méthodes!!
+## Justification de la mÃ©thodologie
+DAns cette partie on va comparer la performance des deux méthodes ScotLASS et SPCA.
+On considère trois facteurs: 
+$$
+V_{1} \sim N(0,290) \\
+V_{2} \sim N(0,300)\\
+V_{3} = -0.3 * V_{1} +0.925 * V_{2} +\epsilon, \space \epsilon \sim N(0,1)
+$$
+tel que $V_{1},\space V_{2}, $et $\epsilon \sim N(0,1)$
+On construit 10 variable tel que:
+$$X_{i}=V_{1}+ \epsilon^1_{i}, \space \epsilon^1_{i} \sim N(0,1) \space \text{pour i=1, 2, 3, 4}\\
+X_{i}=V_{2}+ \epsilon^2_{i}, \space \epsilon^2_{i} \sim N(0,1) \space \text{pour i=5, 6, 7, 8}\\
+X_{i}=V_{3}+ \epsilon^3_{i}, \space \epsilon^3_{i} \sim N(0,1) \space \text{pour i=1,2 ,3, 4}\\
+$$
+
+On remarque que les deux premiers axes de l'ACP explique plus de 80% de la variance totale, et que 
+
+
+```{r sim ACP SPCA Scotlass}
+#simulation
+rm(list=ls())
+
+## ACP
+v1 <- rnorm(1000,0,sqrt(290))
+v2 <- rnorm(1000,0,sqrt(300))
+v3 <- -0.3 * v1 + 0.925 * v2 + rnorm(1000)
+
+
+x=matrix(0,1000,10)
+for(i in 1:4){
+  x[,i]= v1+ rep(rnorm(1),1000)
+}
+
+for(i in 5:8){
+  x[,i]= v2+ rep(rnorm(1),1000)
+}
+
+for(i in 9:10){
+  x[,i]= v3+ rep(rnorm(1),1000)
+}
+cor(x)
+data.acp <- princomp(x)
+dat.vecp = loadings(data.acp)  
+print(dat.vecp, cutoff = 0)
+summary(data.acp)
+
+
+##SPCA
+sparse.pca.result <- spca(x, K = 2, type = "predictor", sparse = "varnum", para = c(4, 4))
+sparse.pca.result
+```
 
 ## Application de la mÃ©thodologie
 
