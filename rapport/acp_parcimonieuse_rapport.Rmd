@@ -162,12 +162,23 @@ Dans notre cas, on consid?re les k premiers CPs. Soit $A_{p*k}=[\alpha_{1}, \alp
 Le probl?me d'optimisation g?narlis? obtenu est:
 $$(\hat{A},\hat{B})=argmin \sum_{i=1}^{n} ||X_{i} -AB^{T}X_{i}||^2 + \sum_{j=1}^{k} |\beta_{j}||^2 + \sum_{j=1}^{k} \lambda_{1,j} ||\beta_{j}||_{1} $$
 sous la contrainte $$A^T A = I_{k*k}$$
+Pour résumer, l'algorithme de cette méthode peut se résumer comme suit:
+1. On commence par $A = V[,1:k]$ les coefficients de saturation des K premieres composantes principales.
+2. Sachant $A= [\alpha_{1}, \alpha_{2}, ...,\alpha_{k}]$, On résout le problème pour$j=1, 2, ..., k$
+$$\beta_j =arg min_ \beta(\alpha_j-\beta)^TX^TX(\alpha_j-\beta)+\lambda||\beta||^2 +\lambda_1,j||\beta||_1$$
+3. Pour une matrice $B=[\beta_1, \beta_2, ..., \beta_k]$ fixé, on calcule la décomposition de la matrice en valeur singulière SVD de $X^TXB= UDV^T$, par la suite on met A à jour, ce qui donne $A= UV^T$
+4. On répète les étapes 2-3 jusqu'à la convergence.
+5. On normalise V, $\hat V_j = \frac{\beta_j}{||\beta_j||}$
 
+####Notes:
+1. les résultats de cet algorithme ne change pas vraiment à la variation de$\lambda$, en pratique, on choisi $\lambda$ un petit nombre positive pour éviter les problèmes potentiels de collinéarité dans X.
+
+2. En principe, on peut choisir différentes combinaisons de 
+$\{ \lambda_1,j\}$ pour avoir un bon choix des paramètres et par là avoir un bon compromis entre la variance expliquée et la sparsité.
 
 ## Justification de la mÃ©thodologie
-## Justification de la mÃ©thodologie
-DAns cette partie on va comparer la performance des deux m?thodes ScotLASS et SPCA.
-On consid?re trois facteurs: 
+Dans cette partie on va comparer la performance des deux méthodes ScotLASS et SPCA.
+On considère trois facteurs: 
 $$
 V_{1} \sim N(0,290) \\
 V_{2} \sim N(0,300)\\
@@ -175,12 +186,14 @@ V_{3} = -0.3 * V_{1} +0.925 * V_{2} +\epsilon, \space \epsilon \sim N(0,1)
 $$
 tel que $V_{1},\space V_{2}, $et $\epsilon \sim N(0,1)$
 On construit 10 variable tel que:
-$$X_{i}=V_{1}+ \epsilon^1_{i}, \space \epsilon^1_{i} \sim N(0,1) \space \text{pour i=1, 2, 3, 4}\\
-X_{i}=V_{2}+ \epsilon^2_{i}, \space \epsilon^2_{i} \sim N(0,1) \space \text{pour i=5, 6, 7, 8}\\
-X_{i}=V_{3}+ \epsilon^3_{i}, \space \epsilon^3_{i} \sim N(0,1) \space \text{pour i=1,2 ,3, 4}\\
+$$X_{i}=V_{1}+ \epsilon^1_{i}, \space \epsilon^1_{i} \sim N(0,1) \space \text{pour i=1, 2, 3, 4,}\\
+X_{i}=V_{2}+ \epsilon^2_{i}, \space \epsilon^2_{i} \sim N(0,1) \space \text{pour i=5, 6, 7, 8,}\\
+X_{i}=V_{3}+ \epsilon^3_{i}, \space \epsilon^3_{i} \sim N(0,1) \space \text{pour i=9, 10.}\\
+\{\epsilon^j_i\}  \text{sont indépendants,pour j=1, 2, 3 et i=1, ..., 10.}
 $$
 
-On remarque que les deux premiers axes de l'ACP explique plus de 80% de la variance totale, et que 
+On remarque que les deux premiers axes de l'ACP expliquent plus de 80% de la variance totale, cela suggère qu'on a besoin de deux facteurs dérivées avec une meilleur représentation parcimonieuse. Le nombre de variable associé à chaqu'un des facteurs est respectivement 4, 4, 2. Idéalement, Le premier facteur dérivé devra être expliqué par $(X_5, X_6, X_7, X_8)$, alors que le deuxième devra être expliqué par les variables $(X_1, X_2, X_3, X_4)$. En fait, si on résout le problème de maximisation de la variance sous la contrainte qu'il y a juste 4 variables qui ont des coefficient de saturantion non nulles, on obtient les mêmes variables.
+On remarque que la méthode SPCA donne des axes sparces et facilite l'interpretation des axes mais par conséquent il y a une diminution du pourcentage de la variance expliquée.
 
 
 ```{r sim ACP SPCA Scotlass}
@@ -215,9 +228,19 @@ summary(data.acp)
 ##SPCA
 sparse.pca.result <- spca(x, K = 2, type = "predictor", sparse = "varnum", para = c(4, 4))
 sparse.pca.result
+
+
 ```
 
 ## Application de la mÃ©thodologie
+Cette partie a comme but de traiter la base de donnée classique "pitprops" qui montre la dificulté d'interpretation des composantes principales, et essayer de régler ce problème  avec la nouvelle méthode de l'ACP parcimonieuse en utilisant la technique SPCA.
+On considère les six composantes principales. On pose $\lambda=0$, $\lambda_1= (0.06, 0.16, 0.1, 0.5, 0.5, 0.5)$. Ces valeurs ont été choisi en se basant sur la contrainte d'obtenir à peu près la même variance expliquée dans l'ACP que dans SPCA, comme expliqué dans figure 1; 
+
+```{r lambda}
+##
+```
+
+
 
 ```{r spca}
 rpca <- principal(pitprops, nfactors = 6, rotate = "varimax")
