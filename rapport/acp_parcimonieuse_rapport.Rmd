@@ -24,7 +24,7 @@ Cependant, cette interprétation peut se révèler assez complexe dans le cas o�
 
 La méthodologie introduite dans le présent document est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes calculées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. On pourrait donc dire que cette méthode permet de combiner l'aspect réduction de la dimensionnalité apportée par l'ACP et l'aspect simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
 
-La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie. Finalement, la section 6 aura comme but de conclure brièvement en plus de mentionner d'autres éléments à savoir à propos de la méthodologie.
+La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie.
 
 ## Exemple de motivation
 
@@ -205,20 +205,58 @@ Les 3 structures différentes de vecteurs et valeurs propres sont définis dans 
 
 À partir des données simulées, il est possible d'appliquer l'ACP suivi de la rotation varimax ainsi que l'ACP parcimonieuse et voir quelle des deux méthodes permet le mieux de retrouver les structures définits initiallement. Les tableaux 7, 8 et 9 montrent les distances entre les vecteurs de coefficients de saturation trouvés par les deux méthodes avec les "vrais" vecteurs de coefficients définits dans les 3 structures différentes. 
 
-```{r structures}
+```{r structure_blocks}
 # Structure en blocks
 vectors_blocks <- matrix(c(0.096, 0.082, 0.08, 0.594, 0.584, 0.533, -0.537, -0.565, -0.608, 0.085, 0.096, 0.074, 0.759, -0.599, -0.119, -0.074, -0.114, 0.18, -0.12, 0.231, -0.119, -0.308, -0.418, 0.805, 0.335, 0.511, -0.771, 0.069, 0.052, -0.157, -0.021, -0.013, 0.016, 0.731, -0.678, -0.069), nrow = 6, ncol = 6)
 valeurs_blocks <- c(1.8367, 1.64, 0.751, 0.659, 0.607, 0.506)
+data_structure_blocks <- data.table(
+  variable = paste0("x", seq(1,6)),
+  PC1 = vectors_blocks[,1],
+  PC2 = vectors_blocks[,2],
+  PC3 = vectors_blocks[,3],
+  PC4 = vectors_blocks[,4],
+  PC5 = vectors_blocks[,5],
+  PC6 = vectors_blocks[,6]
+)
+knitr::kable(data_structure_blocks, format = "latex", booktabs = T, row.names = FALSE, align = rep("c", 6), caption = "Coefficients de saturation théorique de la structure en blocks.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
 
-
+```{r structure_int}
 # Structure intermediaire
 vectors_intermediaires <- matrix(c(0.224, 0.253, 0.227, 0.553, 0.521, 0.507, -0.509, -0.519, -0.553, 0.249, 0.254, 0.199, 0.604, -0.361, -0.246, -0.249, -0.258, 0.561, 0.297, -0.644, 0.377, -0.052, 0.451, -0.384, -0.327, -0.341, 0.608, 0.262, -0.509, 0.281, 0.361, -0.064, -0.267, 0.706, -0.367, -0.402), nrow = 6, ncol = 6)
 valeurs_intermediaires <- c(1.795, 1.674, 0.796, 0.618, 0.608, 0.510)
+data_structure_intermediaire <- data.table(
+  variable = paste0("x", seq(1,6)),
+  PC1 = vectors_intermediaires[,1],
+  PC2 = vectors_intermediaires[,2],
+  PC3 = vectors_intermediaires[,3],
+  PC4 = vectors_intermediaires[,4],
+  PC5 = vectors_intermediaires[,5],
+  PC6 = vectors_intermediaires[,6]
+)
+knitr::kable(data_structure_intermediaire, format = "latex", booktabs = T, row.names = FALSE, align = rep("c", 6), caption = "Coefficients de saturation théorique de la structure intermédiaire.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
 
+```{r structure_platte}
 # Structure platte
 vectors_plattes <- matrix(c(-0.455, -0.439, -0.415, 0.434, 0.301, 0.385, 0.336, 0.370, 0.422, 0.458, 0.435, 0.416, -0.087, -0.212, 0.378, 0.040, -0.697, 0.563, 0.741, -0.630, -0.110, -0.136, 0.114, 0.104, -0.328, -0.445, 0.697, -0.167, 0.356, -0.234, 0.125, -0.175, 0.099, 0.744, -0.306, -0.545), nrow = 6, ncol = 6)
 valeurs_plattes <- c(1.841, 1.709, 0.801, 0.649, 0.520, 0.480)
+data_structure_plattes <- data.table(
+  variable = paste0("x", seq(1,6)),
+  PC1 = vectors_plattes[,1],
+  PC2 = vectors_plattes[,2],
+  PC3 = vectors_plattes[,3],
+  PC4 = vectors_plattes[,4],
+  PC5 = vectors_plattes[,5],
+  PC6 = vectors_plattes[,6]
+)
+knitr::kable(data_structure_plattes, format = "latex", booktabs = T, row.names = FALSE, align = rep("c", 6), caption = "Coefficients de saturation théorique de la structure uniforme.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
 ```
+
+Dans les tableaux 7, 8 et 9, on remarque que la méthode d'analyse en composante principale parcimonieuse (SPCA) retrouve des coefficients de corrélation qui sont plus près de ceux définis au départ, et ce, pour les $3$ types de structure.
 
 ```{r simulations}
 
@@ -312,78 +350,54 @@ dist_spca_int <- sapply(1:6, function(x) {
 dist_rpca_platte <- sapply(1:6, function(x) {
   dist_loadings(rpca_platte$loadings[,x], vectors_plattes[,x])
 })
-dist_rpca_platte <- sapply(1:6, function(x) {
+dist_spca_platte <- sapply(1:6, function(x) {
   dist_loadings(spca_platte$loadings[,x], vectors_plattes[,x])
 })
-
 ```
 
+```{r distance_blocks}
+# Structure en blocks
+data_structure_blocks <- data.table(
+  methode = c("RPCA", "SPCA"),
+  PC1 = c(dist_rpca_blocks[1], dist_spca_blocks[1]),
+  PC2 = c(dist_rpca_blocks[2], dist_spca_blocks[2]),
+  PC3 = c(dist_rpca_blocks[3], dist_spca_blocks[3]),
+  PC4 = c(dist_rpca_blocks[4], dist_spca_blocks[4]),
+  PC5 = c(dist_rpca_blocks[5], dist_spca_blocks[5]),
+  PC6 = c(dist_rpca_blocks[6], dist_spca_blocks[6])
+)
+knitr::kable(data_structure_blocks, format = "latex", booktabs = T, row.names = FALSE, col.names = c("Méthode", paste0("PC", seq(1,6))), align = rep("c", 7), caption = "Distances entre les vecteurs de coefficients de saturation reconstruits d'après les 2 méthodes avec les vecteurs définis dans la structure en blocks.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
 
+```{r distance_int}
+# Structure intermediaire
+data_structure_intermediaire <- data.table(
+  methode = c("RPCA", "SPCA"),
+  PC1 = c(dist_rpca_int[1], dist_spca_int[1]),
+  PC2 = c(dist_rpca_int[2], dist_spca_int[2]),
+  PC3 = c(dist_rpca_int[3], dist_spca_int[3]),
+  PC4 = c(dist_rpca_int[4], dist_spca_int[4]),
+  PC5 = c(dist_rpca_int[5], dist_spca_int[5]),
+  PC6 = c(dist_rpca_int[6], dist_spca_int[6])
+)
+knitr::kable(data_structure_intermediaire, format = "latex", booktabs = T, row.names = FALSE, col.names = c("Méthode", paste0("PC", seq(1,6))), align = rep("c", 7), caption = "Distances entre les vecteurs de coefficients de saturation reconstruits d'après les 2 méthodes avec les vecteurs définis dans la structure en intermédiaire.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
 
-
-
-
-
-
-
-
-
-
-
-
-Dans cette partie on va comparer la performance des deux m?thodes ScotLASS et SPCA.
-On consid?re trois facteurs: 
-$$
-V_{1} \sim N(0,290) \\
-V_{2} \sim N(0,300)\\
-V_{3} = -0.3 * V_{1} +0.925 * V_{2} +\epsilon, \space \epsilon \sim N(0,1)
-$$
-tel que $V_{1},\space V_{2}, $et $\epsilon \sim N(0,1)$
-On construit 10 variable tel que:
-$$X_{i}=V_{1}+ \epsilon^1_{i}, \space \epsilon^1_{i} \sim N(0,1) \space \text{pour i=1, 2, 3, 4,}\\
-X_{i}=V_{2}+ \epsilon^2_{i}, \space \epsilon^2_{i} \sim N(0,1) \space \text{pour i=5, 6, 7, 8,}\\
-X_{i}=V_{3}+ \epsilon^3_{i}, \space \epsilon^3_{i} \sim N(0,1) \space \text{pour i=9, 10.}\\
-\{\epsilon^j_i\}  \text{sont ind?pendants,pour j=1, 2, 3 et i=1, ..., 10.}
-$$
-
-On remarque que les deux premiers axes de l'ACP expliquent plus de 80% de la variance totale, cela sugg?re qu'on a besoin de deux facteurs d?riv?es avec une meilleur repr?sentation parcimonieuse. Le nombre de variable associ? ? chaqu'un des facteurs est respectivement 4, 4, 2. Id?alement, Le premier facteur d?riv? devra ?tre expliqu? par $(X_5, X_6, X_7, X_8)$, alors que le deuxi?me devra ?tre expliqu? par les variables $(X_1, X_2, X_3, X_4)$. En fait, si on r?sout le probl?me de maximisation de la variance sous la contrainte qu'il y a juste 4 variables qui ont des coefficient de saturantion non nulles, on obtient les m?mes variables.
-On remarque que la m?thode SPCA donne des axes sparces et facilite l'interpretation des axes mais par cons?quent il y a une diminution du pourcentage de la variance expliqu?e.
-
-
-```{r sim ACP SPCA Scotlass}
-#simulation
-rm(list=ls())
-
-## ACP
-v1 <- rnorm(1000,0,sqrt(290))
-v2 <- rnorm(1000,0,sqrt(300))
-v3 <- -0.3 * v1 + 0.925 * v2 + rnorm(1000)
-
-
-x=matrix(0,1000,10)
-for(i in 1:4){
-  x[,i]= v1+ rep(rnorm(1),1000)
-}
-
-for(i in 5:8){
-  x[,i]= v2+ rep(rnorm(1),1000)
-}
-
-for(i in 9:10){
-  x[,i]= v3+ rep(rnorm(1),1000)
-}
-cor(x)
-data.acp <- princomp(x)
-dat.vecp = loadings(data.acp)  
-print(dat.vecp, cutoff = 0)
-summary(data.acp)
-
-
-##SPCA
-sparse.pca.result <- spca(x, K = 2, type = "predictor", sparse = "varnum", para = c(4, 4))
-sparse.pca.result
-
-
+```{r distance_platte}
+# Structure platte
+data_structure_platte <- data.table(
+  methode = c("RPCA", "SPCA"),
+  PC1 = c(dist_rpca_platte[1], dist_spca_platte[1]),
+  PC2 = c(dist_rpca_platte[2], dist_spca_platte[2]),
+  PC3 = c(dist_rpca_platte[3], dist_spca_platte[3]),
+  PC4 = c(dist_rpca_platte[4], dist_spca_platte[4]),
+  PC5 = c(dist_rpca_platte[5], dist_spca_platte[5]),
+  PC6 = c(dist_rpca_platte[6], dist_spca_platte[6])
+)
+knitr::kable(data_structure_platte, format = "latex", booktabs = T, row.names = FALSE, col.names = c("Méthode", paste0("PC", seq(1,6))), align = rep("c", 7), caption = "Distances entre les vecteurs de coefficients de saturation reconstruits d'après les 2 méthodes avec les vecteurs définis dans la structure uniforme.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
 ## Application de la méthodologie
@@ -450,7 +464,5 @@ data.table(
 On remarque à la figure 1 que la régularisation faite par la méthode SPCA est forte sur les composantes 4 à 6. Cela est effectivement controllé par l'hyperparamètre $\lambda_1$ définit un peu plus tôt. Pour les premières composantes, on voit qu'il y a un lien entre le nombres de coefficients nuls de la méthode SPCA et le nombre de coefficients faibles des autres méthodes. Cela veut donc dire que les coefficients qui ont été tirés vers $0$ sont probablement des coefficients "peu importants" et sont ceux que nous aurions excluts intuitivement de notre interprétation.
 
 Comme mentionné précédemment, l'amélioration de l'interprétabilité se fait souvent au prix de perdre de l'information, ou de la variabilité dans les composantes principales. En regardant de plus près les tableaux 2, 3 et 4, on remarque que la rotation varimax et la méthode SPCA ont le même genre de pertes au niveau de la variabilité. Toutefois, étant donné que nous avons un gain au niveau de l'interprétabilité avec la méthode d'analyse en composante principale parcimonieuse, il est possible de conclure que celle-ci constitue une amélioration par rapport aux autres méthodes comme la rotation.
-
-## Autres éléments pertinents
 
 ## Bibliographie
