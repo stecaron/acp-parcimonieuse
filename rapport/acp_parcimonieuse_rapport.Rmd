@@ -1,7 +1,7 @@
 ---
 title: "ACP Parcimonieuse"
 author: "Stéphane Caron/Sofia Harrouch"
-date: '2018-03-13'
+date: '2018-03-25'
 bibliography: bibliography.bib
 output:
   pdf_document:
@@ -16,15 +16,15 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ## Introduction
 
-Les méthodes statistiques de réduction de la dimensionnalité ont généralement comme objectif de réduire la dimension d'un jeu de données dans le but de simplifier l'interprétation des données, de permettre la visualisation des donnnées ou même de d'améliorer la performance de certaines méthodes appliquées sur ces données réduites. En termes simples, réduire la dimensionnalité revient à réduire le nombre de variables (p) mesurées.
+Les méthodes statistiques de réduction de la dimensionnalité ont généralement comme objectif de réduire la dimension d'un jeu de données dans le but de simplifier l'interprétation des données, de permettre la visualisation des donnnées ou même d'améliorer la performance de certaines méthodes appliquées sur ces données réduites. En termes simples, réduire la dimensionnalité revient à réduire le nombre de variables (p) mesurées.
 
 L'analyse en composante principale est une méthode classique de réduction de la dimensionnalité. Cette méthode permet de créer des combinaisons linéaires des différentes variables du jeu de données tout en conservant le plus de variabilité possible. Chacune des nouvelles composantes principales créées possèdent un vecteur de coefficients de saturation (loadings) de dimension $p\text{ x }1$, correspondant en quelque sorte à l'importance attribuée à chacune des différentes variables originales du jeu de données. Il est donc possible d'interpréter ces coefficients de saturation et d'obtenir une interprétation plus généralisée de certaines composantes principales calculées.
 
-Cependant, cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement de restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permetttant de faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
+Cependant, cette interprétation peut se révèler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement de restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permetttant de faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
 
-La méthodologie introduite dans le présent document est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes calculées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. On pourrait donc dire que cette méthode permet de combiner l'aspect réduction de la dimensionnalité apportée par l'ACP et l'aspect simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
+La méthodologie introduite dans le présent document est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes calculées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zero. On pourrait donc dire que cette méthode permet de combiner l'aspect de réduction de la dimensionnalité apportée par l'ACP et l'aspect de simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
 
-La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie. Finalement, la section 6 aura comme but de conclure brièvement en plus de mentionner d'autres éléments à savoir à propos de la méthodologie.
+La section 2 fera l'illustration de ce genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie. Finalement, la section 6 aura comme but de conclure brièvement en plus de mentionner d'autres éléments à savoir à propos de la méthodologie.
 
 ## Exemple de motivation
 
@@ -47,9 +47,9 @@ Comme mentionné dans l'introduction, l'ACP consiste essentiellement à trouver 
 $$
 F(\alpha_1) = \alpha_1' \Sigma \alpha_1
 $$
-avec la contrainte que $\alpha_1'\alpha_1=1$. La matrice $\Sigma$ correspond à la matrice de covariance ou à la matrice de corrélation (dépend situation).
+avec la contrainte que $\alpha_1'\alpha_1=1$. La matrice $\Sigma$ correspond à la matrice de covariance ou à la matrice de corrélation (dépend de la situation).
 
-Le vecteur $\alpha_1$ correspond au vecteur de coefficients de saturation de la première composante principale. On refait la même chose pour la deuxième composante principale en ajoutant la contrainte que
+Le vecteur $\alpha_1$ correspond au vecteur de coefficients de saturation de la première composante principale. On refait la même chose pour la deuxième composante principale en ajoutant la contrainte que:
 
 $$
 cov(\alpha_1'X, \alpha_2'X) = 0
@@ -102,19 +102,19 @@ knitr::kable(data_rpca, format = "latex", booktabs = T, row.names = FALSE, col.n
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
-En analysant de plus près le tableau 3, on remarque que la rotation effectuée à permit d'améliorer légèrement l'interprétabilité des premières composantes. Désormais, on remarque que les variables x1 et x2 se démarquent davantage des autres dans la première composante, même chose pour x3 et x4 dans la deuxième composante. Bien que la rotation permet d'améliorer l'interprétabilité, on remarque qu'on perd de la variabilité dans les premières composantes après la rotation. Dans l'ACP classique, les 3 premières composantes expliquaient environ 65% de la variabilité alors que dans le cas de l'ACP avec rotation, les 3 mêmes composantes expliquent environ 56% de la variabilité. De plus, on remarque que ce ne sont plus nécessairement les mêmes composantes qui expliquent successivement le maximum de variabilité. Par exemple, la 4ème composante principale dans l'ACP classique est celle qui explique le moins de variabilité après la rotation. Ces constats sont en quelque sorte les inconvéniants pouvant être rattachés aux rotations et sont également la motivation derrière l'ACP parcimonieuse.
+En analysant de plus près le tableau 3, on remarque que la rotation effectuée a permis d'améliorer légèrement l'interprétabilité des premières composantes. Désormais, on remarque que les variables x1 et x2 se démarquent davantage des autres dans la première composante, même chose pour x3 et x4 dans la deuxième composante. Bien que la rotation permet d'améliorer l'interprétabilité, on remarque qu'on perd de la variabilité dans les premières composantes après la rotation. Dans l'ACP classique, les 3 premières composantes expliquaient environ 65% de la variabilité alors que dans le cas de l'ACP avec rotation, les 3 mêmes composantes expliquent environ 56% de la variabilité. De plus, on remarque que ce ne sont plus nécessairement les mêmes composantes qui expliquent successivement le maximum de variabilité. Par exemple, la 4ème composante principale dans l'ACP classique est celle qui explique le moins de variabilité après la rotation. Ces constats sont en quelque sorte les inconvéniants pouvant être rattachés aux rotations et sont également la motivation derrière l'ACP parcimonieuse.
 
 ## Description de la méthodologie
 
 Comme mentionné précédemment, l'ACP souffre parfois du problème d'interprétation des axes, ou des vecteurs de coefficients de saturation. Pour palier à ce problème, il est possible d'avoir recours à une méthode spécifique, soit l'ACP parcimonieuse. Cette méthode permet de trouver des axes "sparses" qui sont expliqués par un petit nombre des variables seulement. On pourrait donc dire que la méthode fait en quelque sorte une régularisation et ignore l'effet de certaines variables sur les axes principales.
 
-Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de vecteurs de coefficients de saturation. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principale (SCoTLASS) alors que la la deuxième méthode est construite en se basant sur la propriété de l'erreur de recontruction (SPCA).
+Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de vecteurs de coefficients de saturation. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principales (SCoTLASS) alors que la la deuxième méthode est construite en se basant sur la propriété de l'erreur de recontruction (SPCA).
 
 ### Méthode 1: SCoTLASS
 
 Cette technique [@Jolliffe2003], emprunte l'idée du LASSO (Least Absolute Shrinkage and Selection Operation) introduite par Tibshirani (1996). Le LASSO est généralement appliqué en régression multiple quand le nombre de variables est élevé en faisant une régularisation sur celles-ci. Dans le problème de l'interprétabilité de l'ACP, cette méthode peut se reveler fort utile pour garder uniquement les variables importantes et ainsi faciliter l'interprétation. La méthode SCoTLASS (Simplifed Component Technique LASSO) permet d'introduire une borne sur la somme des valeurs absolues des coefficients, ces derniers devenant nul s'ils sont inférieurs à cette borne.
 
-Soit X le jeu de données $X=(X_{1}, .., X_{p})^{T}$ et sa matrice de corrélation $R= corr(X)$.
+Soit X le jeu de données $X=(X_{1}, .., X_{p})^{T}$ et $R= corr(X)$ sa matrice de corrélation.
 En faisant l'analyse en composante principale sur la matrice de corrélation, on obtient les composantes qui sont des combinaisions linéaires des $p$ variables mesurées, soit:
 
 $$
@@ -146,7 +146,7 @@ Dans cette méthode, il faut donc définir un hyperparamètre ($t$) qui permettr
 2. pour $t \leq 1$, il n'existe pas de solution.
 3. pour $t=1$, on a exactement une valeur non nulle de $a_{kj}$ pour chaque k.
 
-Le point (2) est expliqué par la contrainte que le vecteur de coefficients de saturation doit être normé. Si on veut effectué une régularisation sur les coefficients, il faut donc choisir une valeur de $t$ entre $1$ et $\sqrt{p}$. Une stratégie possible est d'essayer plusieurs valeurs différentes, mais cela a commme conséquence de pouvoir être coûteux en temps de calcul.
+Le point (2) est expliqué par la contrainte que le vecteur de coefficients de saturation doit être normé. Si on veut effectuer une régularisation sur les coefficients, il faut donc choisir une valeur de $t$ entre $1$ et $\sqrt{p}$. Une stratégie possible est d'essayer plusieurs valeurs différentes, mais cela a commme conséquence un coût élevé par rapport au temps de calcul.
 
 Dans le choix du paramètre $t$, il faut aussi considérer le fait que plus la régularisation est importante, plus les composantes seront facilement interprétables, mais cela au côut de perdre de la variabilité. Il faut donc trouver un équilibre entre la simplicité des composantes et la quantité d'information conservée. Ce compromis dépend effectivement du jeu de données et également du contexte.
 
@@ -159,19 +159,19 @@ Dans cette partie, on introduit une autre approche estimant les composantes prin
 
 Chaque composante principale peut être définit comme une combinaison linéaire des $p$ variables originales du jeu de données, donc les coefficients de saturation sur les composantes principales peuvent être également être obtenus en faisant la régression de la composante principale sur ces $p$ variables. Après l'application de l'ACP sur le jeu de donnée, on reconstruit les coefficients par une regression ridge, ce qui veut dire que cette méthode dépend des résultats obtenus avec l'ACP.
 
-On note $Y_{i}$ la projetction de la ième composante principale et $lambda$ une valeur positive. L'estimateur de ridge est donné par:
+On note $Y_{i}$ la projection de la ième composante principale et $lambda$ une valeur positive. L'estimateur de ridge est donné par:
 $$\hat{\beta}_{ridge}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2 $$
 
 Le deuxième élément dans la dernière équation, qui est controlé par un hyperparamètre $lambda$, permet de controler la régularisation effectuée sur la régression. Effectivement, plus il y a de coefficients non nuls dans la régression, plus l'erreur est élevée. Cela aura donc pour effet de ne pas garder de variables inutiles dans le modèle.
 
 Soit $\hat{v}=\frac{\hat{\beta}_{ridge}}{||\hat{\beta}_{ridge}||}$ et $\hat{v}=V_{i}$.
-Cette pénalité de ridge n'en n'est pas vraiment une, elle sert simplement ? reconstruire les composantes.
+Cette pénalité de ridge n'en n'est pas vraiment une, elle sert simplement à reconstruire les composantes.
 
-Ensuite, la m?thode rajoute une nouvelle p?nalit? $L_{1}$;, la p?nalit? de Lasso, ? l'equation pr?cedante, ce qui donne un nouveau probl?me d'optimisation:
+Ensuite, la méthode rajoute une nouvelle pénalité $L_{1}$; la pénalité de Lasso, à l'equation précedante, ce qui donne un nouveau problème d'optimisation:
 
 $$\hat{\beta}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2+\lambda_{1} ||\beta||_{1} $$
 
-telle que: $||\beta||_{1}= \sum_{j=1}^{p}|\beta_{j}|$ est la norme 1 de $\beta$. On appelle $\hat{V}_{i}= \frac{\hat{\beta}}{||\hat{\beta}||}$ l'approximation de $V_{i}$, et la $X\hat{V}_{i}$ la ième composante principale approximée.
+telle que: $||\beta||_{1}= \sum_{j=1}^{p}|\beta_{j}|$ est la norme 1 de $\beta$. On appelle $\hat{V}_{i}= \frac{\hat{\beta}}{||\hat{\beta}||}$ l'approximation de $V_{i}$, et $X\hat{V}_{i}$ la ième composante principale approximée.
 
 Dans notre cas, on considère les k premières composantes principales. Soit $A_{p*k}=[\alpha_{1}, \alpha_{2}, ....,\alpha_{k}]$ et $B_{p*k}=[\beta_{1}, \beta_{2}, ....,\beta_{k}]$
 
@@ -180,8 +180,8 @@ $$(\hat{A},\hat{B})=argmin \sum_{i=1}^{n} ||X_{i} -AB^{T}X_{i}||^2 + \sum_{j=1}^
 sous la contrainte $$A^T A = I_{k*k}$$
 
 L'algorithme de cette méthode peut se résumer comme suit:
-1. On commence par $A = V[,1:k]$ les coefficients de saturation des K premières composantes principales.
-2. Sachant $A= [\alpha_{1}, \alpha_{2}, ...,\alpha_{k}]$, On résout le problème pour$j=1, 2, ..., k$
+1. On commence par $A = V[1:k]$ les coefficients de saturation des K premières composantes principales.
+2. Sachant $A= [\alpha_{1}, \alpha_{2}, ...,\alpha_{k}]$, On résout le problème pour $j=1, 2, ..., k$
 $$\beta_j =arg min_ \beta(\alpha_j-\beta)^TX^TX(\alpha_j-\beta)+\lambda||\beta||^2 +\lambda_1,j||\beta||_1$$
 3. Pour une matrice $B=[\beta_1, \beta_2, ..., \beta_k]$ fixée, on calcule la décomposition de la matrice en valeur singulière (SVD) de $X^TXB= UDV^T$, par la suite on met A à jour, ce qui donne $A= UV^T$
 4. On répète les étapes 2-3 jusqu'à la convergence.
@@ -194,14 +194,14 @@ $$\beta_j =arg min_ \beta(\alpha_j-\beta)^TX^TX(\alpha_j-\beta)+\lambda||\beta||
 
 ## Justification de la méthodologie
 
-Pour justifier la méthodologie, il est possible de réaliser des simulations et voir comment performe l'analyse en composante principale parcimonieuse versus d'autres méthodes comme la méthode par rotation. Dans cet exemple, nous allons définir $3$ structures de vecteurs et valeurs propres différentes que nous cherchons à retrouver au travers de simulations. En effet, disons que nous avons une matrice et vecteurs propres $A$ et un vecteurs de valeurs propres $I$, il est possible de retrouver la strucutre de corrélation de cette manière:
+Pour justifier la méthodologie, il est possible de réaliser des simulations et voir comment performe l'analyse en composante principale parcimonieuse versus d'autres méthodes comme la méthode par rotation. Dans cet exemple, nous allons définir $3$ structures de vecteurs et valeurs propres différentes que nous cherchons à retrouver au travers de simulations. En effet, disons que nous avons une matrice et vecteurs propres $A$ et un vecteur de valeurs propres $I$, il est possible de retrouver la strucutre de corrélation de cette manière:
 
 $$
 \Sigma = A DA^{-1}
 $$
-où D est une matrice diagonale construite avec les valeurs propres($I$). De cette manière, on refait en quelque sorte le chemin inverse de la décomposition en valeurs et vecteurs propre de la structure de corrélation (ou covariance). Une fois que la structure de corrélation est retrouvée, il est possible de simuler des lois normales multivariées à partir de cette même structure.
+où D est une matrice diagonale construite avec les valeurs propres($I$). De cette manière, on refait en quelque sorte le chemin inverse de la décomposition en valeurs et vecteurs propres de la structure de corrélation (ou covariance). Une fois que la structure de corrélation est retrouvée, il est possible de simuler des lois normales multivariées à partir de cette même structure.
 
-Les 3 structures différentes de vecteurs et valeurs propres sont définis dans les tableaux 4, 5 et 6. La première est construite de manière à ce qu'il y aille 3 variables plus importantes et 3 variables moins importantes dans chacune des composantes. La troisième structure est construite de manière à avoir des coefficients de saturation proche les uns des autres pour chacune des composantes. Pour finir, la deuxième structure est un intermédiaire entre les deux structures décrites plus tôt.
+Les 3 structures différentes de vecteurs et valeurs propres sont définis dans les tableaux 4, 5 et 6. La première est construite de manière à ce qu'il y aille 3 variables plus importantes et 3 variables moins importantes dans chacune des composantes. La troisième structure est construite de manière à avoir des coefficients de saturation proches les uns des autres pour chacune des composantes. Pour finir, la deuxième structure est une intermédiaire entre les deux structures décrites plus tôt.
 
 À partir des données simulées, il est possible d'appliquer l'ACP suivi de la rotation varimax ainsi que l'ACP parcimonieuse et voir quelle des deux méthodes permet le mieux de retrouver les structures définits initiallement. Les tableaux 7, 8 et 9 montrent les distances entre les vecteurs de coefficients de saturation trouvés par les deux méthodes avec les "vrais" vecteurs de coefficients définits dans les 3 structures différentes. 
 
@@ -346,8 +346,8 @@ X_{i}=V_{3}+ \epsilon^3_{i}, \space \epsilon^3_{i} \sim N(0,1) \space \text{pour
 \{\epsilon^j_i\}  \text{sont ind?pendants,pour j=1, 2, 3 et i=1, ..., 10.}
 $$
 
-On remarque que les deux premiers axes de l'ACP expliquent plus de 80% de la variance totale, cela sugg?re qu'on a besoin de deux facteurs d?riv?es avec une meilleur repr?sentation parcimonieuse. Le nombre de variable associ? ? chaqu'un des facteurs est respectivement 4, 4, 2. Id?alement, Le premier facteur d?riv? devra ?tre expliqu? par $(X_5, X_6, X_7, X_8)$, alors que le deuxi?me devra ?tre expliqu? par les variables $(X_1, X_2, X_3, X_4)$. En fait, si on r?sout le probl?me de maximisation de la variance sous la contrainte qu'il y a juste 4 variables qui ont des coefficient de saturantion non nulles, on obtient les m?mes variables.
-On remarque que la m?thode SPCA donne des axes sparces et facilite l'interpretation des axes mais par cons?quent il y a une diminution du pourcentage de la variance expliqu?e.
+On remarque que les deux premiers axes de l'ACP expliquent plus de 80% de la variance totale, cela suggère qu'on a besoin de deux facteurs dérivées avec une meilleur représentation parcimonieuse. Le nombre de variable associé à chaqu'un des facteurs est respectivement 4, 4, 2. Idéalement, Le premier facteur dérivé devra être expliqué par $(X_5, X_6, X_7, X_8)$, alors que le deuxième devra être expliqué par les variables $(X_1, X_2, X_3, X_4)$. En fait, si on résout le problème de maximisation de la variance sous la contrainte qu'il y a juste 4 variables qui ont des coefficients de saturation non nuls, on obtient les mêmes variables.
+On remarque que la méthode SPCA donne des axes sparces et facilite l'interpretation des axes mais par conséquent il y a une diminution du pourcentage de la variance expliquée.
 
 
 ```{r sim ACP SPCA Scotlass}
@@ -447,9 +447,9 @@ data.table(
     theme_classic()
 ```
 
-On remarque à la figure 1 que la régularisation faite par la méthode SPCA est forte sur les composantes 4 à 6. Cela est effectivement controllé par l'hyperparamètre $\lambda_1$ définit un peu plus tôt. Pour les premières composantes, on voit qu'il y a un lien entre le nombres de coefficients nuls de la méthode SPCA et le nombre de coefficients faibles des autres méthodes. Cela veut donc dire que les coefficients qui ont été tirés vers $0$ sont probablement des coefficients "peu importants" et sont ceux que nous aurions excluts intuitivement de notre interprétation.
+On remarque à la figure 1 que la régularisation faite par la méthode SPCA est forte sur les composantes 4 à 6. Cela est effectivement controlé par l'hyperparamètre $\lambda_1$ définit un peu plus tôt. Pour les premières composantes, on voit qu'il y a un lien entre le nombres de coefficients nuls de la méthode SPCA et le nombre de coefficients faibles des autres méthodes. Cela veut donc dire que les coefficients qui ont été tiré vers $0$ sont probablement des coefficients "peu importants" et sont ceux que nous aurions excluts intuitivement de notre interprétation.
 
-Comme mentionné précédemment, l'amélioration de l'interprétabilité se fait souvent au prix de perdre de l'information, ou de la variabilité dans les composantes principales. En regardant de plus près les tableaux 2, 3 et 4, on remarque que la rotation varimax et la méthode SPCA ont le même genre de pertes au niveau de la variabilité. Toutefois, étant donné que nous avons un gain au niveau de l'interprétabilité avec la méthode d'analyse en composante principale parcimonieuse, il est possible de conclure que celle-ci constitue une amélioration par rapport aux autres méthodes comme la rotation.
+Comme mentionné précédemment, l'amélioration de l'interprétabilité se fait souvent au prix de perte de l'information, ou de la variabilité dans les composantes principales. En regardant de plus près les tableaux 2, 3 et 4, on remarque que la rotation varimax et la méthode SPCA ont le même genre de pertes au niveau de la variabilité. Toutefois, étant donné que nous avons un gain au niveau de l'interprétabilité avec la méthode d'analyse en composante principale parcimonieuse, il est possible de conclure que celle-ci constitue une amélioration par rapport aux autres méthodes comme la rotation.
 
 ## Autres éléments pertinents
 
