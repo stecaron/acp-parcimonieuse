@@ -1,0 +1,70 @@
+---
+title: "ACP parcimonieuse"
+author: "Stéphane Caron/Sofia Harrouch"
+date: '2018-03-28'
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Contenu
+
+- Introduction du concept
+- Exemple de motivation
+- Description de la méthodologie
+- Exemple d'application
+- Autres implications
+
+## Réduction de la dimensionnalité
+
+Les techniques de réduction de la dimensionnalité ont comme objectifs de réduire le nombre de variables observées dans le but de:
+
+- Simplifier l'interprétation de données
+- Visualiser les données
+- Améliorer la performance de d'autres méthodes
+
+## L'ACP
+
+L'analyse en composantes principales est méthode classique de réduction de la dimensionnalité.
+
+**Objectif**
+
+Obtenir une représentation des données dans un espace plus restreint en conservant la plus grande quantité d'information possible.
+
+- On crée des combinaisons linéaires des $p$ variables
+- On maximise la variance à chacune des composantes
+
+## Notation
+
+Soit le jeu de données représenté par:
+
+$\mathbf{X} = (X_1, ..., X_p)^\top$
+
+avec une matrice de covariance $\Sigma = \text{var}(\mathbf{X})$.
+
+La première composante principale est donnée par:
+
+$Y_1 = \alpha^{\top}_{1}\mathbf{X}$
+
+qui maximise $\text{var}(Y_1)$.
+
+## L'interprétation de l'ACP
+
+## Les inconvéniants de l'ACP
+
+## Les méthodes d'interprétation
+
+## Les inconvéniants
+
+## Description de la méthodologie
+
+## Justification de la méthodologie
+
+## Exemple d'application
+
+## Autres implications
+
+## Références
+
