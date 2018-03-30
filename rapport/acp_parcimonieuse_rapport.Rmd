@@ -29,14 +29,20 @@ La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec
 
 Pour illustrer la motivation derrière la méthodologie, supposons qu'on cherche à simplifier un jeu de données provenant d'un échantillon de 180 coupes de bois de pin afin d'avoir une meilleure compréhension des différentes mesures (variables) impliquées. Les différentes variables du jeu de données en question sont présentées dans le tableau 1. À partir de la matrice de corrélation, il est possible de commencer par faire l'analyse en composante principale et analyser les différentes composantes calculées.
 
-```{r dataset}
+```{r import_data, echo = TRUE}
 library(elasticnet)
+
+# Ce jeu de données correspond à la matrice de corrélation
+data(pitprops)
+```
+
+
+```{r dataset}
 library(data.table)
 
-data(pitprops)
 data_description <- data.table(
   variable = c(paste0("x", seq(1:ncol(pitprops)))),
-  description = c("Diamètre dans le haut de l'arbre (en pouces)", "Longeur (en pouces)", "Humidité (% poids sec)", "Gravité au moment du test", "Nombre d'anneaux dans le haut de l'arbre", "Nombre d'anneaux dans le haut de l'arbre", "Branche principale (en pouces)", "Distance du bout de la branche principale au haut de l'arbre", "Nombre de spires", "Longueur de l'hélice transparente du haut (en pouces)", "Nombre moyen de nœuds par verticille", "Diamètre moyen des noeuds (en pouces)")
+  description = c("Diamètre dans le haut de l'arbre (en pouces)", "Longeur (en pouces)", "Humidité (% poids sec)", "Gravité au moment du test", "Nombre d'anneaux dans le haut de l'arbre", "Nombre d'anneaux dans le bas de l'arbre", "Branche principale (en pouces)", "Distance du bout de la branche principale au haut de l'arbre", "Nombre de spires", "Longueur de l'hélice transparente du haut (en pouces)", "Nombre moyen de nœuds par verticille", "Diamètre moyen des noeuds (en pouces)")
 )
 knitr::kable(x = data_description, col.names = c("Variables", "Description"), row.names = FALSE, align = c("c", "l"), caption = "Présentation des différentes variables du jeu de données pitprops.")
 ```
@@ -62,9 +68,17 @@ La première peut être analysée en tentant d'interpréter les coefficients de 
 
 Le tableau 2 montre les résultats des 6 premières composantes principales calculées par l'ACP. On garde seulement les 6 premières composantes étant donné qu'elles expliquent plus de 87% de la variabilité totale du jeu de données.
 
-```{r acp}
-options(scipen = 999)
+```{r acp, echo = TRUE}
+library(stats)
+
+# Faire l'ACP classique sur la matrice de corrélation
 acp <- prcomp(x = pitprops, center = FALSE)
+```
+
+
+
+```{r acp_results}
+options(scipen = 999)
 library(dplyr)
 library(kableExtra)
 
@@ -83,11 +97,15 @@ knitr::kable(data_pca, format = "latex", booktabs = T, row.names = FALSE, col.na
 
 Dans le tableau 2, on remarque que les premières composantes principales ont beaucoup de coefficients qui se ressemblent, ce qui rend difficile l'interprétation de celles-ci. Pour palier à ce problème, nous pouvons effectuer une rotation de ces composantes principales. Une rotation classique dans ce genre de situation serait la rotation varimax. Cette rotation est de type orthogonale, c'est donc dire que le système de coordonnées actuel ne subit seulement qu'une rotation. La rotation est faite dans le but de rapprocher le plus possible les coefficients de saturation vers 0 ou 1. Le tableau 3 montre les résultats obtenus après avoir effectué la rotation varimax.
 
-```{r rotation}
+```{r rotation, echo = TRUE}
 library(psych)
 
+# Faire l'ACP, mais en faisant une rotation varimax des CP
 acp_rotated <- principal(pitprops, 6, rotate = "varimax", eps = 1e-14)
+```
 
+
+```{r rotation_results}
 data_rpca <- data.table(
   variable = c(paste0("x", seq(1:ncol(pitprops))), "Variance (%)", "Cumulative variance (%)"),
   PC1 = round(c(as.numeric(acp_rotated$loadings[, 1]), 0.28, 0.28), 3),
@@ -401,13 +419,15 @@ knitr::kable(data_structure_platte, format = "latex", booktabs = T, row.names = 
 
 ## Application de la méthodologie
 
-Cette partie a comme but de revenir au jeu de données présenté dans la section 2 et voir comment se comporte les méthodes introduites dans ce document. On se rappelle que l'ACP classique appliquée sur le jeu de données pitprops permettait de définir des composantes principales qui étaient difficiles à interpréter. Pour palier à ce problème, il était possible de faire une rotation de ces composantes. Toutefois, cela amenait d'autres problèmes comme la perte d'information dans les premières composantes principales ainsi que d'autres problèmes d'interprétabilité.
+Cette partie a comme but de revenir au jeu de données présenté dans la section "Exemple de motivation" et voir comment se comporte les méthodes introduites dans ce document. On se rappelle que l'ACP classique appliquée sur le jeu de données pitprops permettait de définir des composantes principales qui étaient difficiles à interpréter. Pour palier à ce problème, il était possible de faire une rotation de ces composantes. Toutefois, cela amenait d'autres problèmes comme la perte d'information dans les premières composantes principales ainsi que d'autres problèmes d'interprétabilité.
 
 Dans cette section, nous allons donc comparer les résultats obtenus par les trois méthodes suivantes:
 
 1. L'ACP classique (PCA)
 2. L'ACP suivi d'une rotation varimax (RPCA)
 3. L'analyse en composante principale parcimonieuse (SPCA)
+
+La première méthode (ACP) est implémentée dans plusieurs librairies *R*, mais pour l'exemple nous avions utilisé la fonction *prcomp* de la librairie **stats**. Pour la deuxième méthode (RPCA), nous avons utilisé la fonction *principal* de la librairie **psych**. Pour la dernière méthode, nous avons utilisé la librairie **elasticnet** et la fonction *spca*.
 
 Les hyperparamètres de la méthode SPCA ont été définis dans le but d'obtenir une variance expliquée similaire à celle de l'ACP pour les $6$ premières composantes principales. Voici les paramètres:
 
@@ -416,14 +436,21 @@ Les hyperparamètres de la méthode SPCA ont été définis dans le but d'obteni
   \lambda_1= [0.06, 0.16, 0.1, 0.5, 0.5, 0.5]
 \end{gather*}
 
+On commence par définir les hyperparamètres définits ci-dessus et on applique la fonction sur le jeu de données pitpros.
 
-En appliquant la méthode SPCA, on obtient des coefficients de saturation qui sont en fonction d'un plus petit nombre de variables. Ces différents vecteurs de coefficients de saturation sont présentés dans le tableau 4. 
-
-```{r application}
+```{r spca, echo = TRUE}
 library(elasticnet)
 data("pitprops")
-spca_pitprops <- spca(pitprops, K = 6, type = "Gram", sparse = "penalty", para = c(0.06, 0.16, 0.1, 0.5, 0.5, 0.5))
 
+lambda <- 0.000001
+lambda_1 <- c(0.06, 0.16, 0.1, 0.5, 0.5, 0.5)
+
+spca_pitprops <- spca(pitprops, K = 6, type = "Gram", sparse = "penalty", para = lambda_1, lambda = lambda)
+```
+
+En appliquant la méthode SPCA sur le jeu de données, on obtient des coefficients de saturation qui sont en fonction d'un plus petit nombre de variables. Ces différents vecteurs de coefficients de saturation sont présentés dans le tableau 4. 
+
+```{r application}
 data_spca <- data.table(
   variable = c(paste0("x", seq(1:ncol(pitprops))), "Variance (%)", "Cumulative variance (%)"),
   PC1 = round(c(as.numeric(spca_pitprops$loadings[, 1]), spca_pitprops$pev[1], sum(spca_pitprops$pev[1:1])), 3),
@@ -438,7 +465,7 @@ knitr::kable(data_spca, format = "latex", booktabs = T, row.names = FALSE, col.n
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
-En analysant le tableau 4, on remarque que 7 variables sur 13 sont non nulles pour la première composante principale. Pour la deuxième et la troisième, 4 sur 13 sont non nulles. Cela permet donc de faciliter l'interprétation des composantes, car on peut immédiatement écarter les coefficients nuls, comparativement à la méthode de la rotation, qui ne permettait pas cela. Ainsi, on peut conclure que la méthode d'analyse en composante principale parcimonieuse donne les résultats les plus faciles à interpréter, suivi dans l'ordre par la méthode de la rotation et de l'ACP classique. Il est également possible de voir, pour chacune des composantes principales, si le nombre de coefficients nuls de la méthode SPCA sont enlignés avec le nombre coefficients "faibles" (<= 0.2) des autres méthodes.
+En analysant le tableau 10, on remarque que 7 variables sur 13 sont non nulles pour la première composante principale. Pour la deuxième et la troisième, 4 sur 13 sont non nulles. Cela permet donc de faciliter l'interprétation des composantes, car on peut immédiatement écarter les coefficients nuls, comparativement à la méthode de la rotation, qui ne permettait pas cela. Ainsi, on peut conclure que la méthode d'analyse en composante principale parcimonieuse donne les résultats les plus faciles à interpréter, suivi dans l'ordre par la méthode de la rotation et de l'ACP classique. Il est également possible de voir, pour chacune des composantes principales, si le nombre de coefficients nuls de la méthode SPCA sont enlignés avec le nombre coefficients "faibles" (<= 0.2) des autres méthodes.
 
 ```{r graph_coeff, fig.align='center', fig.cap="Nombre de coefficients de saturation nuls ou faible (<=0.2) selon les différentes méthodes."}
 library(ggplot2)
