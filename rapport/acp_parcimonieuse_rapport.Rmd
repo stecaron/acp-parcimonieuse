@@ -16,11 +16,11 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 Les méthodes statistiques de réduction de la dimensionnalité ont généralement comme objectif de réduire la dimension d'un jeu de données dans le but de simplifier l'interprétation des données, de permettre la visualisation des données ou même d'améliorer la performance de certaines méthodes appliquées sur ces données réduites. En termes simples, réduire la dimensionnalité revient à réduire le nombre de variables (p) mesurées.
 
-L'analyse en composante principale est une méthode classique de réduction de la dimensionnalité. Cette méthode permet de créer des combinaisons linéaires des différentes variables du jeu de données tout en conservant le plus de variabilité possible. Chacune des nouvelles composantes principales créées possèdent un vecteur de coefficients de saturation (loadings) de dimension $p\text{ x }1$, correspondant en quelque sorte à l'importance attribuée à chacune des différentes variables originales du jeu de données. Il est donc possible d'interpréter ces coefficients de saturation et d'obtenir une interprétation plus généralisée de certaines composantes principales calculées.
+L'analyse en composantes principales est une méthode classique de réduction de la dimensionnalité. Cette méthode permet de créer des combinaisons linéaires des différentes variables du jeu de données tout en conservant le plus de variabilité possible. Chacune des nouvelles composantes principales créées possède un vecteur de coefficients de saturation (loadings) de dimension $p\text{ x }1$, correspondant en quelque sorte à l'importance attribuée à chacune des différentes variables originales du jeu de données. Il est donc possible d'interpréter ces coefficients de saturation et d'obtenir une interprétation plus généralisée de certaines composantes principales calculées.
 
-Cependant, cette interprétation peut se révéler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherche à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement de restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permettant de faciliter l'interprétation des composantes principales, mais elles ont tous certains désavantages.
+Cependant, cette interprétation peut se révéler assez complexe dans le cas où une composante principale est expliquée (coefficients de saturation élevés) par plusieurs variables originales du jeu de données. De plus, il peut être difficile de définir à partir de quelle valeur exactement un coefficient de saturation est considéré comme étant "non important" pour une composante principale. Pour palier à ce problème d'interprétation, il existe différentes méthodes connues. Par exemple, les rotations [@Jolliffe1989] cherchent à simplifier l'interprétation des composantes principales. Il pourrait également être possible d'écarter les coefficients de saturation inférieurs à une certaine valeur ou simplement de restreindre les valeurs possibles que ces coefficients peuvent prendre (ex: -1, 0 ou 1). Ces méthodes sont des exemples de stratégie permettant de faciliter l'interprétation des composantes principales, mais elles ont toutes certains désavantages.
 
-La méthodologie introduite dans le présent document est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composante principale qui auront comme objectif d'améliorer l'interprétabilité des composantes calculées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égale à zéro. On pourrait donc dire que cette méthode permet de combiner l'aspect de réduction de la dimensionnalité apportée par l'ACP et l'aspect de simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
+La méthodologie introduite dans le présent document est en quelque sorte une alternative à ces méthodes. En bref, elle consiste à ajouter certaines contraintes au modèle d'analyse en composantes principales qui auront comme objectif d'améliorer l'interprétabilité des composantes calculées. Cela permettra notamment d'obtenir des coefficients de saturation exactement égales à zéro. On pourrait donc dire que cette méthode permet de combiner l'aspect de réduction de la dimensionnalité apportée par l'ACP et l'aspect de simplification de l'interprétabilité apporté par les exemples décrits plus haut. 
 
 La section 2 fera l'illustration du genre de problème qu'on peut éprouver avec l'analyse en composante principale et les rotations en terme d'interprétatibilité. La section 3 a comme objectif de décrire la méthodologie. Dans la section 4, nous verrons plus en détails la justification théorique et les résultats de simulation de la méthodologie. La section 5 permettra d'illustrer avec un exemple complet les résultats de la méthodologie.
 
@@ -60,7 +60,7 @@ Il est également possible de démontrer que si on fait la décomposition en val
 
 La première peut être analysée en tentant d'interpréter les coefficients de saturation (vecteurs propres). Plus il y a de coefficients similaires, plus la composante est difficile à interpréter. À l'extrême, le cas le plus simple serait le cas où seulement un seul coefficient ne serait pas égale à 0. Dans ce cas-ci, la composante serait effectivement facile à interpréter, mais il y aurait probablement beaucoup de perte d'information (peu de variance expliquée), ce qui n'est pas nécessairement désiré. L'information conservée à chacune des composantes peut quant à elle être quantifiée avec la variance expliquée par la composante principale.
 
-Le tableau 2 montre les résultats des 6 premières composantes principales calculés par l'ACP. On garde seulement les 6 premières composantes étant donné qu'elles expliquent plus de 87% de la variabilité totale du jeu de données.
+Le tableau 2 montre les résultats des 6 premières composantes principales calculées par l'ACP. On garde seulement les 6 premières composantes étant donné qu'elles expliquent plus de 87% de la variabilité totale du jeu de données.
 
 ```{r acp}
 options(scipen = 999)
@@ -77,7 +77,7 @@ data_pca <- data.table(
   PC5 = round(c(as.numeric(acp$rotation[, 5]), 100*acp$sdev[5]/sum(acp$sdev), 100*cumsum(acp$sdev)[5]/sum(acp$sdev)), 3),
   PC6 = round(c(as.numeric(acp$rotation[, 6]), 100*acp$sdev[6]/sum(acp$sdev), 100*cumsum(acp$sdev)[6]/sum(acp$sdev)), 3)
 )
-knitr::kable(data_pca, format = "latex", booktabs = T, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Tableau 2: Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.") %>% 
+knitr::kable(data_pca, format = "latex", booktabs = T, row.names = FALSE, col.names = c("", paste0("PC", seq(1:6))), align = rep("c", 6), caption = "Coefficients de saturation de l'analyse en composante principale effectuée sur la matrice de corrélation du jeu de données pitprops.") %>% 
   kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
@@ -105,7 +105,7 @@ En analysant de plus près le tableau 3, on remarque que la rotation effectuée 
 
 ## Description de la méthodologie
 
-Comme mentionné précédemment, l'ACP souffre parfois du problème d'interprétation des axes, ou des vecteurs de coefficients de saturation. Pour palier à ce problème, il est possible d'avoir recours à une méthode spécifique, soit l'ACP parcimonieuse. Cette méthode permet de trouver des axes "éparses" qui sont expliqués par un petit nombre des variables seulement. On pourrait donc dire que la méthode fait en quelque sorte une régularisation et ignore l'effet de certaines variables sur les axes principales.
+Comme mentionné précédemment, l'ACP souffre parfois du problème d'interprétation des axes, ou des vecteurs de coefficients de saturation. Pour palier à ce problème, il est possible d'avoir recours à une méthode spécifique, soit l'ACP parcimonieuse. Cette méthode permet de trouver des axes "éparses" qui sont expliqués par un petit nombre des variables seulement. On pourrait donc dire que la méthode fait en quelque sorte une régularisation et ignore l'effet de certaines variables sur les axes principals.
 
 Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de vecteurs de coefficients de saturation. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principales (SCoTLASS) alors que la la deuxième méthode est construite en se basant sur la propriété de l'erreur de reconstruction (SPCA).
 
@@ -149,14 +149,14 @@ Le point (2) est expliqué par la contrainte que le vecteur de coefficients de s
 
 Dans le choix du paramètre $t$, il faut aussi considérer le fait que plus la régularisation est importante, plus les composantes seront facilement interprétables, mais cela au coût de perdre de la variabilité. Il faut donc trouver un équilibre entre la simplicité des composantes et la quantité d'information conservée. Ce compromis dépend effectivement du jeu de données et également du contexte.
 
-En bref, la contrainte ajoutée par la méthode SCoTLASS permet de régulariser les valeurs des coefficients ce qui permet d'obtenir des coefficients de saturation exactement égales à 0, ce qui facilite donc l'interprétation des composantes.
+En bref, la contrainte ajoutée par la méthode SCoTLASS permet de régulariser les valeurs des coefficients ce qui permet d'obtenir des coefficients de saturation exactement égals à 0, ce qui facilite donc l'interprétation des composantes.
 
 
 ### SPCA: Sparse Principal Component Analysis
 
 Dans cette partie, on introduit une autre approche estimant les composantes principales tout en rendant les vecteurs de coefficients de saturation "sparse" et donc plus facile à interpréter. L'ACP peut être réécrite comme un problème d'optimisation d'une régression en imposant une pénalité quadratique: la pénalité du LASSO via l'Elastic net.
 
-Chaque composante principale peut être définit comme une combinaison linéaire des $p$ variables originales du jeu de données, donc les coefficients de saturation sur les composantes principales peuvent être également être obtenus en faisant la régression de la composante principale sur ces $p$ variables. Après l'application de l'ACP sur le jeu de donnée, on reconstruit les coefficients par une régression ridge, ce qui veut dire que cette méthode dépend des résultats obtenus avec l'ACP.
+Chaque composante principale peut être définit comme une combinaison linéaire des $p$ variables originales du jeu de données, donc les coefficients de saturation sur les composantes principales peuvent être également obtenus en faisant la régression de la composante principale sur ces $p$ variables. Après l'application de l'ACP sur le jeu de donnée, on reconstruit les coefficients par une régression ridge, ce qui veut dire que cette méthode dépend des résultats obtenus avec l'ACP.
 
 On note $Y_{i}$ la projection de la ième composante principale et $lambda$ une valeur positive. L'estimateur de ridge est donné par:
 $$\hat{\beta}_{ridge}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2 $$
@@ -166,7 +166,7 @@ Le deuxième élément dans la dernière équation, qui est contrôlé par un hy
 Soit $\hat{v}=\frac{\hat{\beta}_{ridge}}{||\hat{\beta}_{ridge}||}$ et $\hat{v}=V_{i}$.
 Cette pénalité de ridge n'en n'est pas vraiment une, elle sert simplement à reconstruire les composantes.
 
-Ensuite, la méthode rajoute une nouvelle pénalité $L_{1}$; la pénalité de Lasso, à l’équation précédente, ce qui donne un nouveau problème d'optimisation:
+Ensuite, la méthode rajoute une nouvelle pénalité $L_{1}$ à l’équation précédente, la pénalité de Lasso, ce qui donne un nouveau problème d'optimisation:
 
 $$\hat{\beta}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2+\lambda_{1} ||\beta||_{1} $$
 
@@ -187,7 +187,7 @@ $$\beta_j =arg min_ \beta(\alpha_j-\beta)^TX^TX(\alpha_j-\beta)+\lambda||\beta||
 5. On normalise V, $\hat V_j = \frac{\beta_j}{||\beta_j||}$
 
 ####Notes:
-1. Les résultats de cet algorithme ne change pas vraiment à la variation de $\lambda$. En pratique, on choisi $\lambda$ un petit nombre positive pour éviter les problèmes potentiels de colinéarité dans X.
+1. Les résultats de cet algorithme ne change pas vraiment à la variation de $\lambda$. En pratique, on choisi $\lambda$ un petit nombre positif pour éviter les problèmes potentiels de colinéarité dans X.
 
 2. En principe, on peut choisir différentes combinaisons de $\{ \lambda_1,j\}$ pour avoir un bon choix des paramètres et par là avoir un bon compromis entre la variance expliquée et la sparsité.
 
