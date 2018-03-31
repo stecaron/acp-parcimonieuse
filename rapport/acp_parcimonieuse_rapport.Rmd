@@ -1,11 +1,13 @@
 ---
 title: "ACP Parcimonieuse"
-author: "Stéphane Caron/Sofia Harrouch"
-date: '2018-03-25'
-bibliography: bibliography.bib
+author: "St�f©phane Caron/Sofia Harrouch"
+date: '2018-04-04'
 output:
+  word_document:
+    toc: yes
   pdf_document:
     toc: yes
+bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
