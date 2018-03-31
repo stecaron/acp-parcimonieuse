@@ -17,6 +17,13 @@ knitr::opts_chunk$set(echo = FALSE)
 - Exemple d'application
 - Autres implications
 
+<div class = "notes">
+  Associe le concept de fonction en math
+  Associe pas toujours en programmation
+  Copie paste plus que 2 fois
+  Tres rare: voir un projet comme une fonction
+</div>
+
 ## Réduction de la dimensionnalité
 
 Les techniques de réduction de la dimensionnalité ont comme objectifs de réduire le nombre de variables observées dans le but de:

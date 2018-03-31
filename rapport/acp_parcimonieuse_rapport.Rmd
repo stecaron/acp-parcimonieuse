@@ -1,10 +1,8 @@
 ---
 title: "ACP Parcimonieuse"
-author: "St�f©phane Caron/Sofia Harrouch"
+author: "Stéphane Caron/Sofia Harrouch"
 date: '2018-04-04'
 output:
-  word_document:
-    toc: yes
   pdf_document:
     toc: yes
 bibliography: bibliography.bib
@@ -125,7 +123,7 @@ En analysant de plus près le tableau 3, on remarque que la rotation effectuée 
 
 ## 3. Description de la méthodologie
 
-Comme mentionné précédemment, l'ACP souffre parfois du problème d'interprétation des axes, ou des vecteurs de coefficients de saturation. Pour palier à ce problème, il est possible d'avoir recours à une méthode spécifique, soit l'ACP parcimonieuse. Cette méthode permet de trouver des axes "éparses" qui sont expliqués par un petit nombre des variables seulement. On pourrait donc dire que la méthode fait en quelque sorte une régularisation et ignore l'effet de certaines variables sur les axes principals.
+Comme mentionné précédemment, l'ACP souffre parfois du problème d'interprétation des axes, ou des vecteurs de coefficients de saturation. Pour palier à ce problème, il est possible d'avoir recours à une méthode spécifique, soit l'ACP parcimonieuse. Cette méthode permet de trouver des axes "éparses" qui sont expliqués par un petit nombre des variables seulement. On pourrait donc dire que la méthode fait en quelque sorte une régularisation et ignore l'effet de certaines variables sur les axes principales. Une connaissance sur les méthodes de régularisation peut donc être fort utile pour bien comprendre la mécanique derrière les méthodes d'ACP parcimonieuse. Ainsi, nous avons ajouté en annexe une section faisait une brève introduction sur les fondements derrière les méthodes de régularisation. 
 
 Dans cette section, on expliquera les différentes méthodes proposées pour l'estimation de vecteurs de coefficients de saturation. La première méthode est basée sur la propriété d'obtention d'une variance maximale des composantes principales (SCoTLASS) alors que la la deuxième méthode est construite en se basant sur la propriété de l'erreur de reconstruction (SPCA).
 
@@ -174,42 +172,99 @@ En bref, la contrainte ajoutée par la méthode SCoTLASS permet de régulariser 
 
 ### SPCA: Sparse Principal Component Analysis
 
-Dans cette partie, on introduit une autre approche estimant les composantes principales tout en rendant les vecteurs de coefficients de saturation "sparse" et donc plus facile à interpréter. L'ACP peut être réécrite comme un problème d'optimisation d'une régression en imposant une pénalité quadratique: la pénalité du LASSO via l'Elastic net [@ESL].
+Dans cette partie, on montre une deuxième approche pour l'obtention d'une ACP modifiée et *sparse*. Pour cette méthode, on peut faire l'analogie entre l'ACP et la regression de Ridge. Tout d'abord, on montrera que les composantes principales d'une ACP peuvent être écrites comme un problème d'optimisation d'une regression de Ridge. Finalement, on ajoute la pénalité du Lasso afin d'obtenir un problème d'optimisation sous la forme d'une regression sous la pénalité d'Elastic Net ce qui va nous permettre d'obtenir des composantes principales parcimonieuses.
 
-Chaque composante principale peut être définit comme une combinaison linéaire des $p$ variables originales du jeu de données, donc les coefficients de saturation sur les composantes principales peuvent être également obtenus en faisant la régression de la composante principale sur ces $p$ variables. Après l'application de l'ACP sur le jeu de donnée, on reconstruit les coefficients par une régression ridge, ce qui veut dire que cette méthode dépend des résultats obtenus avec l'ACP.
+#### Approche simple de regression pour l'ACP
 
-On note $Y_{i}$ la projection de la ième composante principale et $lambda$ une valeur positive. L'estimateur de ridge est donné par:
-$$\hat{\beta}_{ridge}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2 $$
+On considère $Y_k =\alpha'_k X$ la kième composante principale obtenu à partir d'une ACP, qui est une combinaison linéaire des $p$ variables intiales. En fait, ces coefficients de saturation $\alpha_k$ peuvent aussi être obtenu en faisant une regression multiple de la composante principale sur les $p$ variables initiales ($Y_k = X\beta + \epsilon$). Ensuite, on peut étendre cette regression à une regression  de Ridge en ajoutant la pénalité $L_2$ dans le but de manipuler toute sorte de données et obtenir une solution unique comme l'ACP.
 
-Le deuxième élément dans la dernière équation, qui est contrôlé par un hyperparamètre $lambda$, permet de contrôler la régularisation effectuée sur la régression. Effectivement, plus il y a de coefficients non nuls dans la régression, plus l'erreur est élevée. Cela aura donc pour effet de ne pas garder de variables inutiles dans le modèle.
+Pour résumer, cette pénalité nous permet juste de reconstruire les composantes principales et non pas de les "pénaliser". Enfin, on rajoute la pénalité du Lasso ($L_1$) pour pénaliser les composantes et de les rendre parcimonieuses. Le problème d'optimisation devient:
 
-Soit $\hat{v}=\frac{\hat{\beta}_{ridge}}{||\hat{\beta}_{ridge}||}$ et $\hat{v}=V_{i}$.
-Cette pénalité de ridge n'en n'est pas vraiment une, elle sert simplement à reconstruire les composantes.
+$$\hat\beta = argmin_\beta ||Y_k -X\beta||+\lambda||\beta||^2+\lambda_1||\beta||_1 \quad(1.1)$$
 
-Ensuite, la méthode rajoute une nouvelle pénalité $L_{1}$ à l’équation précédente, la pénalité de Lasso, ce qui donne un nouveau problème d'optimisation:
+et la kième composante principale approximée est $X \hat V_k= X \frac{\hat\beta}{||\hat \beta||}$.
 
-$$\hat{\beta}= arg min_{\beta} || Y_{i} - X\beta||^2 +\lambda ||\beta||^2+\lambda_{1} ||\beta||_{1} $$
+Cette technique dépend essentiellement du résultat de l'ACP, car on applique l'ACP et on utilise l'équation (1.1) pour trouver une autre apprixmation appropriée des composantes principales pour qu'elles soient parcimonieuses. Dans la prochaine section, nous verrons comment il est possible d'utiliser l'ACP uniquement comme point de départ et ensuite d'itérativement améliorer les estimations des coefficients parcimonieux.
 
-telle que: $||\beta||_{1}= \sum_{j=1}^{p}|\beta_{j}|$ est la norme 1 de $\beta$. On appelle $\hat{V}_{i}= \frac{\hat{\beta}}{||\hat{\beta}||}$ l'approximation de $V_{i}$, et $X\hat{V}_{i}$ la ième composante principale approximée.
+#### Approche complexe de regression pour l'ACP
 
-Dans notre cas, on considère les k premières composantes principales. Soit $A_{p*k}=[\alpha_{1}, \alpha_{2}, ....,\alpha_{k}]$ et $B_{p*k}=[\beta_{1}, \beta_{2}, ....,\beta_{k}]$
+Soient $\mathbf{X}$ la matrice d'observations, $x_i$ la ième ligne de cette matrice, $A_{p\times k}=[\alpha_1,\alpha_2,...,\alpha_k]$ les k premières composantes principales et $B_{p\times k}=[\beta_1,\beta_2,....,\beta_k]$ les k premières composantes principales estimées de tel sorte que les composantes principales soient parcimonieuses.
 
-Le problème d'optimisation généralisé obtenu est:
-$$(\hat{A},\hat{B})=argmin \sum_{i=1}^{n} ||X_{i} -AB^{T}X_{i}||^2 + \sum_{j=1}^{k} \lambda||\beta_{j}||^2 + \sum_{j=1}^{k} \lambda_{1,j} ||\beta_{j}||_{1} $$
-sous la contrainte $$A^T A = I_{k*k}$$
+Le théorème 1 suivant montre que le problème de l'ACP peut se transformer en un problème de regression.
 
-L'algorithme de cette méthode peut se résumer comme suit:
-1. On commence par $A = V[1:k]$ les coefficients de saturation des K premières composantes principales.
-2. Sachant $A= [\alpha_{1}, \alpha_{2}, ...,\alpha_{k}]$, On résout le problème pour $j=1, 2, ..., k$
+**Théorème 1**
+Pour tout $\lambda>0$:
+$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2$$
+Sous la contrainte $$A^TA = I_{k*k}$$
+
+Alors $\hat \beta_j \infty V_j$ pour $j=1,2,...,k$.
+
+Ce théorème nous permet de bien voir la transformation du problème d'optimisation.
+
+En fait,
+$$\sum_{i=1}^n||x_i -AB^Tx_i||^2 =||X -XAB^T||^2$$
+
+$$= ||XA_{ \perp}||^2+ ||XA-XB^T||^2$$
+
+Comme $A$ est orthonormale, $A_{\perp}$ est une matrice quelconque orthonormale telle que $[A;A_{ \perp}]$ est $p\times p$ orthonormal.
+
+Pour A fixé, le problème de minimisation devient:
+
+$$(A, \hat B)=argmin_B C_{\lambda}(A,\hat B)= argmin_{A,B} \sum_{j=1}^{k}||X\alpha_j - X\beta_j||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2$$
+
+Ce qui est équivalent à resoudre k regressions de Ridge indépendantes. Cela nous donne $\hat\beta=(X^TX+\lambda I)^{-1}X^TXA$. En fait, si A correspond aux composantes principales classiques, alors on sait effectivement que B est proportionnelle à V (ce qu'on a montré dans la sous-section précédente).
+
+Après avoir montré l'analogie entre les deux méthodes, on rajoute la pénalité de Lasso pour avoir la "sparsité" des coefficients de regression (ou de saturation). Le problème devient:
+
+$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2+ \sum_{j=1}^{k}\lambda_{1,j}||\beta_j||_1$$
+
+Sous la contrainte:
+
+$$A^TA=I_{k*k}$$
+
+#### Outils pour appliquer la méthode
+
+Voici les différents éléments qui seront nécéssaires pour appliquer la méthode et passer au travers de l'algorithme décrit dans la prochaine section.
+
+1. On suppose que A est connu et on cherche B
+
+$$\hat\beta_j= argmin_{\beta_j} ||Y_j -X\beta_j||^2 +\lambda||\beta_j||^2+ \lambda_{1,j}||\beta_j||_1$$
+
+$$\hat\beta_j =arg min_{\beta_j}( \alpha_j-\beta_j)^TX^TX(\alpha_j-\beta_j)+\lambda||\beta_j||^2 +\lambda_1,j||\beta_j||_1$$
+
+2. On suppose que B est connu et on cherche A (on ignore la pénalité qui est liée aux termes de $B$)
+
+$$min_\beta \sum_{i=1}^k ||x_i-AB^Tx_i||^2 =||X-XBA^T||$$
+
+Sous la contrainte:
+$$A^TA=I_{k*k}$$
+
+La solution est obtenu en utilisant le théorème 2, soit en calculant la décomposition en valeurs singulières (SVD) $(X^TX)B=UDV^T$ et posant $\hat A = UV^T$.
+
+**Théorème 2**
+Soit $M_{n\times p}$ et $N_{n\times k}$ deux matrices. On considère le problème de minimisation suivant
+$$\hat A =argmin_A||M-NA^T||$$
+
+Sous la contrainte
+$$A^TA=I_{k*k}$$
+
+La décomposition en valeurs singulières de $M^TN$ est $UDV^T$, donc $\hat A= UV^T$.
+
+#### Algorithme pour appliquer la méthode
+
+1. On commence par $A = [\alpha_1, \alpha_2, ..., \alpha_K]$ les coefficients de saturation des K premières composantes principales.
+
+2. Sachant $A= [\alpha_{1}, ...,\alpha_{k}]$, on résout le problème
 $$\beta_j =arg min_ \beta(\alpha_j-\beta)^TX^TX(\alpha_j-\beta)+\lambda||\beta||^2 +\lambda_1,j||\beta||_1$$
-3. Pour une matrice $B=[\beta_1, \beta_2, ..., \beta_k]$ fixée, on calcule la décomposition de la matrice en valeur singulière (SVD) de $X^TXB= UDV^T$, par la suite on met A à jour, ce qui donne $A= UV^T$
+pour $j=1, 2, ..., k$. Cela nous permet d'obtenir une estimation de $B$.
+
+3. Pour une matrice $B=[\beta_1, \beta_2, ..., \beta_k]$ fixée, on calcule la décomposition de la matrice en valeur singulière (SVD) de $X^TXB= UDV^T$. Par la suite on met A à jour, ce qui donne $A= UV^T$.
+
 4. On répète les étapes 2-3 jusqu'à la convergence.
+
 5. On normalise V, $\hat V_j = \frac{\beta_j}{||\beta_j||}$
 
-####Notes:
-1. Les résultats de cet algorithme ne change pas vraiment à la variation de $\lambda$. En pratique, on choisi $\lambda$ un petit nombre positif pour éviter les problèmes potentiels de colinéarité dans X.
-
-2. En principe, on peut choisir différentes combinaisons de $\{ \lambda_1,j\}$ pour avoir un bon choix des paramètres et par là avoir un bon compromis entre la variance expliquée et la sparsité.
+Les $V_j$ sont les nouvelles composantes principales parcimonieuses.
 
 ## 4. Justification de la méthodologie
 
@@ -522,6 +577,56 @@ Comme mentionné précédemment, l'amélioration de l'interprétabilité se fait
 
 ## 6. Autres considérations de la méthode
 
-Dans ce document, nous avons décrits deux méthodes en lien avec l'analyse en composantes principales parcimonieuse, soit la méthode SCoTLASS et la méthode SPCA. Il est pertinent de mentionner qu'une autre méthode a été développée, soit la méthode PMA [@Witten]. Cette dernière est basée sur une décomposition pénalisée de la matrice de covariance (ou corrélation). Il existe d'ailleurs une implémentation de cette méthode en **R** qu'on peut retrouver dans la librarie *PMA*.
+Dans ce document, nous avons décrits deux méthodes en lien avec l'analyse en composantes principales parcimonieuse, soit la méthode SCoTLASS et la méthode SPCA. Il est pertinent de mentionner qu'une autre méthode a été développée, soit la méthode PMA [@Witten]. Cette dernière est basée sur une décomposition pénalisée de la matrice de covariance (ou corrélation). Il existe d'ailleurs une implémentation de cette méthode en **R** qu'on peut retrouver dans la librairie *PMA*.
 
-## 7. Bibliographie
+## 7. Annexe
+
+### Les méthodes de régularisation (Ridge, Lasso et Elastic net)
+
+Dans le domaine des mathématiques et de la statistique, plus particulièrement dans le domaine de l'apprentissage automatique, la régularisation fait référence à un processus consistant à ajouter de l'information à un problème pour éviter le **surapprentissage**. Cette information prend généralement la forme d'une pénalité.
+
+Une méthode généralement utilisée est de pénaliser les valeurs extrêmes des paramètres, qui sont souvent associées à un surapprentissage. Pour cela, on va utiliser une norme sur ces paramètres que l'on va ajouter à la fonction qu'on cherche à minimiser. Les normes les plus couramment employées pour cela sont les normes $L_1$ et $L_2$. La norme $L_1$ offre l'avantage de faire une sélection de paramètres, mais elle n'est pas différentiable, ce qui peut être un inconvénient pour les algorithmes utilisant un calcul de gradient pour l'optimisation. Cette régularisation permet alors d'avoir des coefficients qui peuvent être estimés exactement à zéro. Par conséquent, ces méthodes peuvent effectuer une sélection des variables importantes pour la variable réponse.
+
+Dans le cadre d'une régression multiple $Y= X\beta +\epsilon$ tel que $\beta=(\beta_0, \beta_1,\beta_2, ..., \beta_p)^T$ et $X=(1,X_1,...,X_p)$, on se trouve parfois dans la situation où le nombre de paramètres ($p$) est supérieur au nombre d'observations ($n$). En présence de ce nombre élevé de prédicteurs, il sera nécessaire de réduire le nombre de paramètres, car la solution donnée par la méthode des moindres carrés classique ne sera pas unique et la variance aura tendance à être élevée avec un petit biais. Ainsi, les méthodes de régularisation offrirons une réduction importante de variance et une petite augmentation du biais. 
+
+
+#### La méthode de Ridge
+
+La méthode de Ridge est une technique de régularisation qui se base sur la norme $L_2$. Cette méthode a comme pénalité $p(\beta)= ||\beta||^2_2$ avec $||\beta||^2_2 = \sum_{i=1}^{p} \beta^2_i$.
+
+L'estimateur de Ridge de $\beta$ est défini par
+
+$$\hat \beta^{Ridge}= argmin_\beta \{\sum_{i=1}^n(y_i-\beta_0 -\sum_{j=1}^p x_{ij}\beta_j)^2\}$$
+sous la contrainte de $\sum_{j=1}^p \beta^2_j \leq t$.
+
+L'estimateur de Ridge est donc donné par $\hat\beta^{Ridge}=(X^TX+\lambda I)^{-1}X^T y$.
+
+Cette méthode est utilisée dans le cas où il y a une corrélation entre les variables explicatives. Dans ce cas-ci, $X^TX$ a des valeurs proche de zéro et la MMCO n'est pas satisfaisante. Cette méthode permet donc d'ajouter un terme $\lambda$ pour augmenter la valeur de $X^TX$ et ainsi les rendre plus stables. De ce fait, la méthode contrôle donc la variance des estimateurs en pénalisant les grandes valeurs de $\hat\beta$ ce qui a comme avantage l'obtention d'une erreur de prédiction moins faible. Par contre, elle ne permet pas d'avoir un modèle parcimonieux, car on ne pénalise pas les variables nuisibles par des coefficients nuls. Au final, on introduit toutes les variables explicatives dans le modèle ce qui peut compliquer l'interprétation du modèle. 
+
+#### La méthode du Lasso
+
+Cette méthode est basée sur la norme $L_1$. La pénalité de cette méthode est quant à elle donnée par $p(\beta)=||\beta||_1$ avec $||\beta||_1 = \sum_{i=1}^{p} |\beta_i|$.
+
+L'estimateur de $\beta$ par la méthode du Lasso est défini par
+
+$$\hat\beta^{Lasso}= argmin_\beta \{\sum_{i=1}^n(y_i-\beta_0 -\sum_{j=1}^p x_{ij}\beta_j)^2\}$$
+
+avec $\sum_{j=1}^p |\beta|_j \leq t$.
+
+Par un calcul analytique, la solution de ce problème est donnée par
+
+$$\hat\beta^{lasso}_j=signe\{\hat\beta^{MCO}_j\}(|\hat\beta^{MCO}_j|-\lambda)_+$$
+
+Cette méthode permet de créer une parcimonie, car elle élimine les variables nuisibles dans le modèle en estimant leur coefficients par des zéros. Cela permet de réduire le nombre de coefficients ($\beta$) en conservant les variables qui contribuent le plus dans le modèle. Par contre, elle est inappropriée dans le cas où un ensemble de prédicteurs est fortement corrélé, car elle choisit un parmi ceux-ci et annule les autres. Sans oublié le fait qu'elle choisit un maximum de $n$ variables dans le cas où $p > n$. Ces problèmes sont traités par la méthode qui suit.
+
+#### La méthode Elastic Net
+
+Cette méthode de régularisation combine les deux normes ($L_1$ et $L_2$). On peut donc la voir comme un compromis entre la méthode du Lasso et la méthode de Ridge. Sa pénalité est donnée par $p(\beta)=\lambda_1 ||\beta||_1 +\lambda_2 ||\beta||^2_2$.
+
+L'estimateur de $\beta$ par la méthode de l'Elastic Net est défini par
+
+$$\hat\beta^{EN}= argmin_\beta\{||y-X\beta||^2\ + \lambda_1 ||\beta||_1 +\lambda_2 ||\beta||^2_2 \}$$
+
+En introduisant la pénalité $L_1$, on ajoute la possibilité d'obtenir un modèle parcimonieux. L'ajout de la pénalité quadratique $L_2$ assume la suppression de la limitation du nombre des variables sélectionnées, encourage l'effet du groupe (group effect), car elle permet de sélectionner un nombre de paramètres ($p$) supérieur à $n$. De plus, elle permet de tenir en compte la corrélation entre les prédicteurs.
+
+## 8. Bibliographie
