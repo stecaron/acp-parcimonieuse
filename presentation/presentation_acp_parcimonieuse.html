@@ -108,8 +108,6 @@
 <li>Autres implications</li>
 </ul>
 
-<aside class='note'><section><p>Associe le concept de fonction en math Associe pas toujours en programmation Copie paste plus que 2 fois Tres rare: voir un projet comme une fonction</p></section></aside>
-
 </article></slide><slide class=""><hgroup><h2>Réduction de la dimensionnalité</h2></hgroup><article  id="reduction-de-la-dimensionnalite">
 
 <p>Les techniques de réduction de la dimensionnalité ont comme objectifs de réduire le nombre de variables observées dans le but de:</p>
@@ -145,15 +143,119 @@
 
 <p>\(Y_1 = \alpha^{\top}_{1}\mathbf{X}\)</p>
 
-<p>qui maximise \(\text{var}(Y_1)\).</p>
+<p>qui maximise \(\text{var}(Y_1) = \lambda_1\).</p>
+
+</article></slide><slide class=""><hgroup><h2>Décomposition en valeurs singulières</h2></hgroup><article  id="decomposition-en-valeurs-singulieres">
+
+<p>Ce problème d&#39;optimisation peut être résoud plus aisément avec une décomposition en valeurs singulières (SVD) de la matrice \(\Sigma\).</p>
+
+<ul>
+<li>Les vecteurs \(\alpha_1, ..., \alpha_p\) sont donnés par les vecteurs propres normés.</li>
+<li>Les variances \(\lambda_1, ..., \lambda_p\) pour chacune des composantes principales sont données par les valeurs propres.</li>
+</ul>
+
+</article></slide><slide class=""><hgroup><h2>Le résultat de l&#39;ACP</h2></hgroup><article  id="le-resultat-de-lacp">
+
+<p>On peut utiliser le résultat de la décomposition en valeurs singulières pour analyser deux choses:</p>
+
+<ol>
+<li>L&#39;importance relative de chacune des variables dans chacune des composantes principales via les vecteurs de coefficients de saturation (\(\alpha_1, ..., \alpha_p\)).</li>
+<li>La quantité d&#39;information contenue dans chacune des composantes principales via les valeurs propres (\(\lambda_1, ..., \lambda_p\)).</li>
+</ol>
 
 </article></slide><slide class=""><hgroup><h2>L&#39;interprétation de l&#39;ACP</h2></hgroup><article  id="linterpretation-de-lacp">
 
+<p>Voici les vecteurs de coefficients de saturation pour les \(4\) premières composantes principales du jeu de données \(\texttt{decathlon}\) de la librarie <strong>FactoMineR</strong>.</p>
+
+<pre >##                     PC1        PC2         PC3         PC4
+## 100m        -0.42829627  0.1419891 -0.15557953  0.03678703
+## Long.jump    0.41015201 -0.2620794  0.15372674 -0.09901016
+## Shot.put     0.34414444  0.4539470 -0.01972378 -0.18539458
+## High.jump    0.31619436  0.2657761 -0.21894349  0.13189684
+## 400m        -0.37571570  0.4320460  0.11091758 -0.02850297
+## 110m.hurdle -0.41255442  0.1735910 -0.07815576 -0.28290068
+## Discus       0.30542571  0.4600244  0.03623770  0.25259074
+## Pole.vault   0.02783081 -0.1368411  0.58361717 -0.53649480
+## Javeline     0.15319802  0.2405071 -0.32874217 -0.69285498
+## 1500m       -0.03210733  0.3598049  0.65987362  0.15669648</pre>
+
 </article></slide><slide class=""><hgroup><h2>Les inconvéniants de l&#39;ACP</h2></hgroup><article  id="les-inconveniants-de-lacp">
+
+<p>Voici les vecteurs de coefficients de saturation pour les \(4\) premières composantes principales du jeu de données \(\texttt{pitprops}\) de la librarie <strong>elasticnet</strong>.</p>
+
+<pre >##                 PC1         PC2         PC3         PC4
+## topdiam -0.40379375 -0.21785161  0.20729009 -0.09121408
+## length  -0.40554469 -0.18612694  0.23503529 -0.10271814
+## moist   -0.12440384 -0.54064233 -0.14148843  0.07844352
+## testsg  -0.17322061 -0.45563728 -0.35242301  0.05477390
+## ovensg  -0.05717394  0.17007092 -0.48121257  0.04911295
+## ringtop -0.28442510  0.01419526 -0.47525703 -0.06343453
+## ringbut -0.39984124  0.18963655 -0.25310152 -0.06498405
+## bowmax  -0.29355595  0.18915250  0.24305282  0.28554422
+## bowdist -0.35662900 -0.01712421  0.20764231  0.09672331
+## whorls  -0.37891541  0.24845341  0.11876670 -0.20504369
+## clear    0.01109383 -0.20530293  0.07045228  0.80365507
+## knots    0.11508371 -0.34317293 -0.09199914 -0.30080388
+## diaknot  0.11251370 -0.30853263  0.32611380 -0.30337798</pre>
 
 </article></slide><slide class=""><hgroup><h2>Les méthodes d&#39;interprétation</h2></hgroup><article  id="les-methodes-dinterpretation">
 
+<p>Plusieurs méthodes existent pour palier au problème d&#39;interprétation:</p>
+
+<ul>
+<li>Les rotations (varimax, promax, etc)</li>
+<li>Écart les coefficients inférieurs à une certaine valeur</li>
+<li>Limiter les valeurs possibles que les coefficients peuvent prendre (ex: \(\{-1,0,1\}\))</li>
+</ul>
+
+</article></slide><slide class=""><hgroup><h2>Rotation varimax</h2></hgroup><article  id="rotation-varimax">
+
+<p>La rotation varimax est une rotation orthogonale classique est bien souvent implémentée par défaut dans les logiciels.</p>
+
+<pre >##                 RC1         RC2          RC3          RC6
+## topdiam  0.91158833  0.25525200  0.003248157 -0.106347025
+## length   0.93507670  0.18317241  0.012882669 -0.127165342
+## moist    0.13423685  0.96065807 -0.134226396 -0.040882526
+## testsg   0.12499995  0.94359170  0.246142189  0.019936208
+## ovensg  -0.14943647  0.02436959  0.896696850  0.015024738
+## ringtop  0.35345951  0.17711297  0.637609226  0.472223116
+## ringbut  0.62462240 -0.02540720  0.495767182  0.517454238
+## bowmax   0.55829922 -0.08636790 -0.089869218  0.206089302
+## bowdist  0.77348209  0.02754277 -0.017436051  0.093585151
+## whorls   0.68731321 -0.09027095  0.035006876  0.312010462
+## clear    0.05138797  0.07628607 -0.045092225  0.005857861
+## knots   -0.06634932  0.12108227 -0.133540921 -0.068608640
+## diaknot  0.07523732  0.03390112 -0.081548122 -0.930061440</pre>
+
+</article></slide><slide class=""><hgroup><h2>Variance dans les premières composantes principales</h2></hgroup><article  id="variance-dans-les-premieres-composantes-principales">
+
+<p>Voici la quantité d&#39;information (variance) pour les 6 premières composantes principales:</p>
+
+<pre >##                     mesure   PC1   PC2   PC3   PC4   PC5   PC6
+## 1:            Variance (%) 32.45 18.29 14.45  8.53  7.00  6.27
+## 2: Variance cumulative (%) 32.45 50.74 65.19 73.73 80.73 87.00</pre>
+
+<pre >##                     mesure PC1 PC2 PC3 PC6 PC5 PC4
+## 1:            Variance (%)  28  15  12  12  11   9
+## 2: Variance cumulative (%)  28  43  56  67  78  87</pre>
+
 </article></slide><slide class=""><hgroup><h2>Les inconvéniants</h2></hgroup><article  id="les-inconveniants">
+
+<p>Plusieurs désavantages peuvent survenir avec ce type de méthode:</p>
+
+<ul>
+<li>Instabilité dans les interprétations</li>
+<li>Perte d&#39;informations dans les premières composantes principales</li>
+</ul>
+
+</article></slide><slide class=""><hgroup><h2>L&#39;ACP parcimonieuse</h2></hgroup><article  id="lacp-parcimonieuse">
+
+<p>Les méthodes introduites dans cette présentation permettront de combiner en <strong>une seule étape</strong> l&#39;ACP en composantes principales avec les méthodes d&#39;interprétation.</p>
+
+<ul>
+<li>Améliorer l&#39;interprétation en obtenant des coefficients de saturation excatement égales à 0.</li>
+<li>Maximiser la quantitié d&#39;information contenue dans chacune des composantes principales en tenant compte de certaines contraintes d&#39;interprétabilité.</li>
+</ul>
 
 </article></slide><slide class=""><hgroup><h2>Description de la méthodologie</h2></hgroup><article  id="description-de-la-methodologie">
 

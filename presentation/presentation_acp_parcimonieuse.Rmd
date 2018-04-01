@@ -6,7 +6,7 @@ output: ioslides_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ## Contenu
@@ -17,12 +17,6 @@ knitr::opts_chunk$set(echo = FALSE)
 - Exemple d'application
 - Autres implications
 
-<div class = "notes">
-  Associe le concept de fonction en math
-  Associe pas toujours en programmation
-  Copie paste plus que 2 fois
-  Tres rare: voir un projet comme une fonction
-</div>
 
 ## Réduction de la dimensionnalité
 
@@ -55,15 +49,107 @@ La première composante principale est donnée par:
 
 $Y_1 = \alpha^{\top}_{1}\mathbf{X}$
 
-qui maximise $\text{var}(Y_1)$.
+qui maximise $\text{var}(Y_1) = \lambda_1$.
+
+## Décomposition en valeurs singulières
+
+Ce problème d'optimisation peut être résoud plus aisément avec une décomposition en valeurs singulières (SVD) de la matrice $\Sigma$.
+
+- Les vecteurs $\alpha_1, ..., \alpha_p$ sont donnés par les vecteurs propres normés.
+- Les variances $\lambda_1, ..., \lambda_p$ pour chacune des composantes principales sont données par les valeurs propres. 
+
+## Le résultat de l'ACP
+
+On peut utiliser le résultat de la décomposition en valeurs singulières pour analyser deux choses:
+
+1. L'importance relative de chacune des variables dans chacune des composantes principales via les vecteurs de coefficients de saturation ($\alpha_1, ..., \alpha_p$).
+2. La quantité d'information contenue dans chacune des composantes principales via les valeurs propres ($\lambda_1, ..., \lambda_p$).
 
 ## L'interprétation de l'ACP
 
+Voici les vecteurs de coefficients de saturation pour les $4$ premières composantes principales du jeu de données $\texttt{decathlon}$ de la librarie **FactoMineR**.
+
+```{r acp_deca, size="small"}
+library(FactoMineR)
+data("decathlon")
+data_decathlon <- decathlon[,1:10]
+acp <- prcomp(x = cor(data_decathlon), center = FALSE)
+acp$rotation[, 1:4]
+```
+
 ## Les inconvéniants de l'ACP
+
+Voici les vecteurs de coefficients de saturation pour les $4$ premières composantes principales du jeu de données $\texttt{pitprops}$ de la librarie **elasticnet**.
+
+```{r acp_pitprops, size="small"}
+library(elasticnet)
+data("pitprops")
+acp_pit <- prcomp(x = pitprops, center = FALSE)
+acp_pit$rotation[, 1:4]
+```
 
 ## Les méthodes d'interprétation
 
+Plusieurs méthodes existent pour palier au problème d'interprétation:
+
+- Les rotations (varimax, promax, etc)
+- Écart les coefficients inférieurs à une certaine valeur
+- Limiter les valeurs possibles que les coefficients peuvent prendre (ex: $\{-1,0,1\}$)
+
+## Rotation varimax
+
+La rotation varimax est une rotation orthogonale classique est bien souvent implémentée par défaut dans les logiciels.
+
+```{r rotation}
+library(psych)
+acp_rotated <- principal(pitprops, 6, rotate = "varimax", eps = 1e-14)
+acp_rotated$loadings[, 1:4]
+```
+
+## Variance dans les premières composantes principales
+
+Voici la quantité d'information (variance) pour les 6 premières composantes principales:
+
+```{r var}
+library(data.table)
+
+data_var_acp <- data.table(
+  mesure = c("Variance (%)", "Variance cumulative (%)"),
+  PC1 = round(c(100*acp_pit$sdev[1]/sum(acp_pit$sdev), 100*cumsum(acp_pit$sdev)[1]/sum(acp_pit$sdev)), 2),
+  PC2 = round(c(100*acp_pit$sdev[2]/sum(acp_pit$sdev), 100*cumsum(acp_pit$sdev)[2]/sum(acp_pit$sdev)), 2),
+  PC3 = round(c(100*acp_pit$sdev[3]/sum(acp_pit$sdev), 100*cumsum(acp_pit$sdev)[3]/sum(acp_pit$sdev)), 2),
+  PC4 = round(c(100*acp_pit$sdev[4]/sum(acp_pit$sdev), 100*cumsum(acp_pit$sdev)[4]/sum(acp_pit$sdev)), 2),
+  PC5 = round(c(100*acp_pit$sdev[5]/sum(acp_pit$sdev), 100*cumsum(acp_pit$sdev)[5]/sum(acp_pit$sdev)), 2),
+  PC6 = round(c(100*acp_pit$sdev[6]/sum(acp_pit$sdev), 100*cumsum(acp_pit$sdev)[6]/sum(acp_pit$sdev)), 2)
+)
+
+data_var_rot <- data.table(
+  mesure = c("Variance (%)", "Variance cumulative (%)"),
+  PC1 = 100*c(0.2800, 0.28),
+  PC2 = 100*c(0.15, 0.43),
+  PC3 = 100*c(0.12, 0.56),
+  PC6 = 100*c(0.12, 0.67),
+  PC5 = 100*c(0.11, 0.78),
+  PC4 = 100*c(0.09, 0.87)
+)
+
+data_var_acp
+data_var_rot
+```
+
 ## Les inconvéniants
+
+Plusieurs désavantages peuvent survenir avec ce type de méthode:
+
+- Instabilité dans les interprétations
+- Perte d'informations dans les premières composantes principales
+
+## L'ACP parcimonieuse
+
+Les méthodes introduites dans cette présentation permettront de combiner en **une seule étape** l'ACP en composantes principales avec les méthodes d'interprétation.
+
+- Améliorer l'interprétation en obtenant des coefficients de saturation excatement égales à 0.
+- Maximiser la quantitié d'information contenue dans chacune des composantes principales en tenant compte de certaines contraintes d'interprétabilité.
 
 ## Description de la méthodologie
 
