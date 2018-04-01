@@ -2,7 +2,9 @@
 title: "ACP parcimonieuse"
 author: "Stéphane Caron/Sofia Harrouch"
 date: '2018-03-28'
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    css: style_presentation.css
 ---
 
 ```{r setup, include=FALSE}
@@ -155,9 +157,85 @@ Les méthodes introduites dans cette présentation permettront de combiner en **
 
 ## Justification de la méthodologie
 
-## Exemple d'application
+## Jeu de données pitprops
+
+Revenons au jeu de données `pitprops` introduit en début de la présentation et appliquons l'analyse en composante principale parcimonieuse.
+
+- Méthode: SPCA
+- Librairie: **elasticnet**
+- Fonction: *spca*
+
+## Fonction *spca*
+
+![](images/help_spca.png)
+
+## Définir nos paramètres
+
+Voici les paramètres choisis pour l'exemple `pitprops` et l'application de la fonction *spca*.
+
+$$
+  \lambda=0.000001 \\
+  \lambda_1= [0.06, 0.16, 0.1, 0.5, 0.5, 0.5]
+$$
+```{r spca, echo = TRUE}
+lambda <- 0.000001
+lambda_1 <- c(0.06, 0.16, 0.1, 0.5, 0.5, 0.5)
+
+spca_pitprops <- spca(pitprops, 
+                      K = 6, 
+                      type = "Gram", 
+                      sparse = "penalty",
+                      para = lambda_1, 
+                      lambda = lambda)
+```
+
+## Résultat de l'ACP parcimonieuse
+
+```{r spca_loadings, echo = TRUE}
+spca_pitprops$loadings
+```
+
+## Comparaison pour la 1er composante
+
+Voici les vecteurs de coefficients de saturation pour la 1er composante principale ($\alpha_1$) pour les $3$ différentes méthodes.
+
+```{r comp_1_composante}
+data.table(
+  PCA = acp_pit$rotation[, 1],
+  RPCA = acp_rotated$loadings[, 1],
+  SPCA = spca_pitprops$loadings[, 1]
+)
+```
+
+## Coefficients tirés vers 0
+
+```{r graph_coeff, fig.align='center'}
+library(dplyr)
+library(ggplot2)
+
+data.table(
+  PC = rep(as.character(seq(1:6)), 3),
+  methode = c(rep("SPCA", 6), rep("RPCA", 6), rep("PCA", 6)),
+  nb_nuls = c(sapply(1:6, function(x) sum(spca_pitprops$loadings[,x] == 0)), sapply(1:6, function(x) sum(abs(acp_rotated$loadings[,x]) <= 0.3)), sapply(1:6, function(x) sum(abs(acp_pit$rotation[,x]) <= 0.3)))
+) %>% 
+  ggplot(aes(x = PC, y = nb_nuls, group = methode, color = methode)) +
+    geom_point() +
+    geom_line() +
+    scale_x_discrete("Composante principale") +
+    scale_y_continuous("Nombre de coefficents nuls ou plus petit que 0.2", breaks = seq(0,12)) +
+    scale_color_discrete("Méthode") +
+    coord_cartesian(ylim = c(0,13)) +
+    theme_classic()
+```
 
 ## Autres implications
 
 ## Références
+
+- ESL section 14.5.5
+- Jolliffe, Ian T., Nickolay T. Trendafilov, and Mudassir Uddin. ”A modified principal com-
+ponent technique based on the LASSO.” Journal of Computational and Graphical Statistics
+12.3 (2003) : 531-547.
+- Witten, Daniela M., Robert Tibshirani, and Trevor Hastie. ”A penalized matrix decomposi-
+tion, with applications to sparse principal components and canonical correlation analysis.” Biostatistics 10.3 (2009) : 515-534.
 
