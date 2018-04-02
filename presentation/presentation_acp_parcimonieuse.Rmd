@@ -1,11 +1,10 @@
 ---
 title: "ACP parcimonieuse"
-author: "StÃ©phane Caron/Sofia Harrouch"
+author: "Stéphane Caron/Sofia Harrouch"
 date: '2018-03-28'
 output:
   ioslides_presentation:
     css: style_presentation.css
-  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -17,17 +16,17 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 - Introduction du concept
 - Exemple de motivation
 - Description de la méthodologie
+- Justification de la méthodologie
 - Exemple d'application
 - Autres implications
-
 
 ## Réduction de la dimensionnalité
 
 Les techniques de réduction de la dimensionnalité ont comme objectifs de réduire le nombre de variables observées dans le but de:
 
-- Simplifier l'interprétation de données
-- Visualiser les données
-- Améliorer la performance de d'autres méthodes
+- Simplifier l'interprétation des données.
+- Visualiser les données.
+- Améliorer la performance certaines autres méthodes.
 
 ## L'ACP
 
@@ -37,8 +36,8 @@ L'analyse en composantes principales est méthode classique de réduction de la 
 
 Obtenir une représentation des données dans un espace plus restreint en conservant la plus grande quantité d'information possible.
 
-- On crée des combinaisons linéaires des $p$ variables
-- On maximise la variance à chacune des composantes
+- On crée des combinaisons linéaires des $p$ variables.
+- On maximise la variance à chacune des composantes.
 
 ## Notation
 
@@ -96,7 +95,7 @@ acp_pit$rotation[, 1:4]
 Plusieurs méthodes existent pour palier au problème d'interprétation:
 
 - Les rotations (varimax, promax, etc)
-- Écart les coefficients inférieurs à une certaine valeur
+- Écarter les coefficients inférieurs à une certaine valeur
 - Limiter les valeurs possibles que les coefficients peuvent prendre (ex: $\{-1,0,1\}$)
 
 ## Rotation varimax
@@ -219,17 +218,6 @@ $$\hat\beta^{EN}= argmin_\beta\{||y-X\beta||^2\ + \lambda_1 ||\beta||_1 +\lambda
 
 ![](images/Pénalites.png)
 
-
-## SCoTLASS: Notation
-
-- Soit X le jeu de données $X=(X_{1}, .., X_{p})^{T}$.
-- $R= corr(X)$ sa matrice de corrélation.
-- Les composantes principales: pour $(k=1, ...,p)$ 
-$$Y_{k}= \alpha'_{k} X = \sum_{i=1}^{p} \alpha_{ki} X_{i}$$
-
-- la variance de l'axe principale $Y_{k}$: 
-$$var(Y_{k})=\alpha'_{k}* R * \alpha_{k}$$
-
 ## SCoTLASS: Optimisation
  
 Le problème d'opitimisation et les contraintes sont les mêmes que dans le contexte de l'ACP, mais on ajoute une contrainte sur les coefficients de saturation.
@@ -257,19 +245,17 @@ En bref, en sélectionnant une valeur de $t$ entre 1 et $\sqrt{p}$, on fait une 
 
 La méthode comporte certains inconvénients.
 
-- Choix de $t$ peut être difficle
+- Choix de $t$ peut être difficile
 - Problème non convexe
 - Calculs difficiles
 
 ## SPCA: Intuition
 
-Une méthode qui permet la reconstitution des composantes et les facteurs principaux en se basant sur l'analogie entre l'ACP et la regression Ridge, et sur la propriété de l'erreur de reconstruction
+Soit $Y_k =\alpha'_k X$ la kième composante principale obtenue à partir d'une ACP.
 
-## SPCA: La méthode simple
+Ces coefficients de saturation $\alpha_k$ peuvent aussi être obtenus en faisant une regression multiple de la composante principale sur la matrice $X$ ($Y_k = X\beta + \epsilon$).
 
-Soit $Y_k =\alpha'_k X$ la kième composante principale obtenue à partir d'une ACP (une combinaison linéaires des variables initiales).
-
-Ces coefficients de saturation $\alpha_k$ peuvent aussi être obtenus en faisant une regression multiple de la composante principale sur les $p$ variables initiales ($Y_k = X\beta + \epsilon$).
+- On utilise l'erreur de reconstruction et non la décomposition en valeurs singulières pour trouver les valeurs de $\alpha_k$.
 
 ## SPCA: La méthode simple
 
@@ -391,7 +377,7 @@ Les $V_j$ sont les nouvelles composantes principales parcimonieuses.
 
 **Objectif de l'étude de simulation:**
 
-Comparer la performance de l'ACP parcimonieuse par rapport à la méthode de rotation en terme de simplicité et d'interprétabilité.
+Comparer la performance de l'ACP parcimonieuse par rapport à la méthode de rotation en termes de mieux représenter la réalité.
 
 Pour y arriver, nous allons définir $3$ structures différentes de coefficients de saturation que nous voulons reproduire à partir des différentes méthodes d'analyse en composantes principales.
 
@@ -565,7 +551,6 @@ rbindlist(list(melted_cor_blocks, melted_cor_int, melted_cor_platte), use.names 
 
 Une fois qu'on a simulé les données, on peut appliquer les deux méthodes (rotation et SPCA) et comparer les distances entre les vecteurs de coefficients de saturation calculés versus ceux définis au départ.
 
-
 ```{r appliquer_methodes}
 # Appliquer les différentes méthodes --------------------------------------
 
@@ -596,6 +581,15 @@ dist_rpca_blocks <- sapply(1:6, function(x) {
 dist_spca_blocks <- sapply(1:6, function(x) {
   dist_loadings(spca_blocks$loadings[,x], vectors_blocks[,x])
 })
+data_distance_blocks <- data.table(
+  methode = c("RPCA", "SPCA"),
+  PC1 = c(dist_rpca_blocks[1], dist_spca_blocks[1]),
+  PC2 = c(dist_rpca_blocks[2], dist_spca_blocks[2]),
+  PC3 = c(dist_rpca_blocks[3], dist_spca_blocks[3]),
+  PC4 = c(dist_rpca_blocks[4], dist_spca_blocks[4]),
+  PC5 = c(dist_rpca_blocks[5], dist_spca_blocks[5]),
+  PC6 = c(dist_rpca_blocks[6], dist_spca_blocks[6])
+)
 
 # Structure intermediaire
 dist_rpca_int <- sapply(1:6, function(x) {
@@ -604,6 +598,15 @@ dist_rpca_int <- sapply(1:6, function(x) {
 dist_spca_int <- sapply(1:6, function(x) {
   dist_loadings(spca_intermediaire$loadings[,x], vectors_intermediaires[,x])
 })
+data_distance_int <- data.table(
+  methode = c("RPCA", "SPCA"),
+  PC1 = c(dist_rpca_int[1], dist_spca_int[1]),
+  PC2 = c(dist_rpca_int[2], dist_spca_int[2]),
+  PC3 = c(dist_rpca_int[3], dist_spca_int[3]),
+  PC4 = c(dist_rpca_int[4], dist_spca_int[4]),
+  PC5 = c(dist_rpca_int[5], dist_spca_int[5]),
+  PC6 = c(dist_rpca_int[6], dist_spca_int[6])
+)
 
 # Structure platte
 dist_rpca_platte <- sapply(1:6, function(x) {
@@ -612,28 +615,42 @@ dist_rpca_platte <- sapply(1:6, function(x) {
 dist_spca_platte <- sapply(1:6, function(x) {
   dist_loadings(spca_platte$loadings[,x], vectors_plattes[,x])
 })
+data_distance_platte <- data.table(
+  methode = c("RPCA", "SPCA"),
+  PC1 = c(dist_rpca_platte[1], dist_spca_platte[1]),
+  PC2 = c(dist_rpca_platte[2], dist_spca_platte[2]),
+  PC3 = c(dist_rpca_platte[3], dist_spca_platte[3]),
+  PC4 = c(dist_rpca_platte[4], dist_spca_platte[4]),
+  PC5 = c(dist_rpca_platte[5], dist_spca_platte[5]),
+  PC6 = c(dist_rpca_platte[6], dist_spca_platte[6])
+)
 ```
 
 ```{r print_results_blocks, echo = TRUE}
-
+print(data_distance_blocks)
 ```
 
+## Résultats: Structure uniforme
 
+Voici les résultats pour la structure uniforme.
 
-##La méthodologie:
+```{r print_results_int, echo = TRUE}
+print(data_distance_int)
+```
 
-5. Appliquer la méthode de la SPCA
+## Résultats: Structure intermédiaire
 
+Voici les résultats pour la structure intermédiaire.
 
-##La méthodologie:
+```{r print_results_platte, echo = TRUE}
+print(data_distance_platte)
+```
 
-6. Comparer les résultats de ces deux méthodes.
+## Analyse des résultats
 
-On calcule les distances entre les vecteurs de coefficients de saturation trouvés par les deux méthodes avec les "vrais" vecteurs de coefficients définit dans les 3 structures différentes.
+Après avoir effectué l'étude de simulation, on peut conclure que:
 
-## Résultats:
-
-la méthode d'analyse en composante principale parcimonieuse (SPCA) retrouve des coefficients de corrélation qui sont plus près de ceux définis au départ, et ce, pour les $3$ types de structure.
+- La méthode d'ACP parcimonieuse reconstruit mieux les coefficients de saturation, et ce, pour les $3$ types de structure que les rotations.
 
 ## Jeu de données pitprops
 
