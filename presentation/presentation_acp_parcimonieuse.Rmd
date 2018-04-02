@@ -143,12 +143,12 @@ data_var_rot
 
 Plusieurs désavantages peuvent survenir avec ce type de méthode:
 
-- Instabilité dans les interprétations
-- Perte d'informations dans les premières composantes principales
+- Instabilité dans les interprétations.
+- Perte d'information dans les premières composantes principales.
 
 ## L'ACP parcimonieuse
 
-Les méthodes introduites dans cette présentation permettront de combiner en **une seule étape** l'ACP en composantes principales avec les méthodes d'interprétation.
+Les méthodes introduites dans cette présentation permettront de combiner en **une seule étape** l'ACP avec les autres méthodes d'interprétation.
 
 - Améliorer l'interprétation en obtenant des coefficients de saturation excatement égales à 0.
 - Maximiser la quantitié d'information contenue dans chacune des composantes principales en tenant compte de certaines contraintes d'interprétabilité.
@@ -229,6 +229,11 @@ data.table(
 ```
 
 ## Autres implications
+
+Il existe une autre méthode connue que nous n'avons pas touchée dans cette présentation. Il s'agit de la méthode PMD.
+
+- Basée sur la décomposition pénalisée de la matrice de covariance (ou corrélation).
+- On peut retrouver une implémentation de cette méthode en **R** dans la librairie **PMA**.
 
 ## Références
 

@@ -577,7 +577,7 @@ Comme mentionné précédemment, l'amélioration de l'interprétabilité se fait
 
 ## 6. Autres considérations de la méthode
 
-Dans ce document, nous avons décrits deux méthodes en lien avec l'analyse en composantes principales parcimonieuse, soit la méthode SCoTLASS et la méthode SPCA. Il est pertinent de mentionner qu'une autre méthode a été développée, soit la méthode PMA [@Witten]. Cette dernière est basée sur une décomposition pénalisée de la matrice de covariance (ou corrélation). Il existe d'ailleurs une implémentation de cette méthode en **R** qu'on peut retrouver dans la librairie *PMA*.
+Dans ce document, nous avons décrits deux méthodes en lien avec l'analyse en composantes principales parcimonieuse, soit la méthode SCoTLASS et la méthode SPCA. Il est pertinent de mentionner qu'une autre méthode a été développée, soit la méthode PMD [@Witten]. Cette dernière est basée sur une décomposition pénalisée de la matrice de covariance (ou corrélation). Il existe d'ailleurs une implémentation de cette méthode en **R** qu'on peut retrouver dans la librairie *PMA*.
 
 ## 7. Annexe
 
