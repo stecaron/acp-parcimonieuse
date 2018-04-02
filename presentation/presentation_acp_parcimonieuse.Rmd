@@ -127,7 +127,7 @@ data_var_acp <- data.table(
 
 data_var_rot <- data.table(
   mesure = c("Variance (%)", "Variance cumulative (%)"),
-  PC1 = 100*c(0.2800, 0.28),
+  PC1 = 100*c(0.28, 0.28),
   PC2 = 100*c(0.15, 0.43),
   PC3 = 100*c(0.12, 0.56),
   PC6 = 100*c(0.12, 0.67),
