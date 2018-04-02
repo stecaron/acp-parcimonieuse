@@ -1,10 +1,11 @@
 ---
 title: "ACP parcimonieuse"
-author: "Stéphane Caron/Sofia Harrouch"
+author: "StÃ©phane Caron/Sofia Harrouch"
 date: '2018-03-28'
-output: 
+output:
   ioslides_presentation:
     css: style_presentation.css
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -337,7 +338,7 @@ Cela nous donne $\hat\beta=(X^TX+\lambda I)^{-1}X^TXA$.
 On rajoute la pénalité de Lasso pour avoir la "sparsité" des coefficients de regression (ou de saturation).
 
 - Le problème devient:
-$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2+ \sum_{j=1}^{k}\lambda_{1,j}||\beta_j||_1$$
+$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 \\+\lambda \sum_{j=1}^{k}||\beta_j||^2+ \sum_{j=1}^{k}\lambda_{1,j}||\beta_j||_1$$
 Sous la contrainte: $$A^TA=I_{k*k}$$
 
 
