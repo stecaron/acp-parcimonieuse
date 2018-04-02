@@ -146,6 +146,24 @@ Plusieurs désavantages peuvent survenir avec ce type de méthode:
 - Instabilité dans les interprétations.
 - Perte d'information dans les premières composantes principales.
 
+
+---
+title: "ACP parcimonieuse"
+author: "StÃƒÆ’Ã‚Â©phane Caron/Sofia Harrouch"
+date: '2018-03-28'
+output:
+  beamer_presentation: default
+  html_document:
+    df_print: paged
+  ioslides_presentation:
+    css: style_presentation.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
 ## L'ACP parcimonieuse
 
 Les méthodes introduites dans cette présentation permettront de combiner en **une seule étape** l'ACP avec les autres méthodes d'interprétation.
@@ -154,8 +172,585 @@ Les méthodes introduites dans cette présentation permettront de combiner en **
 - Maximiser la quantitié d'information contenue dans chacune des composantes principales en tenant compte de certaines contraintes d'interprétabilité.
 
 ## Description de la méthodologie
+On verra deux méthodes de l'ACP parcimonieuses:
+
+1. SCoTLASS: Simplifed Component Technique LASSO
+
+2. SPCA: Sparse Principal Component Analysis
+
+## Rappel: les méthodes de régularisation
+Il existe plusieurs méthode de régularisation, on en citera trois:
+
+1. Ridge
+
+2. Lasso
+
+3. Elastic net
+
+## Rappel: les méthodes de régularisation(2)
+Dans le cadre d'une régression multiple: 
+$$Y= X\beta +\epsilon$$ 
+
+tel que $$\beta=(\beta_0, \beta_1,\beta_2, ..., \beta_p)^T$$
+
+et $$X=(1,X_1,...,X_p)$$
+
+
+## La méthode de Ridge
+- Elle se base base sur la norme $L_2$.
+
+- La pénalité: $p(\beta)= ||\beta||^2_2$ avec $||\beta||^2_2 = \sum_{i=1}^{p} \beta^2_i$.
+
+- le problème d'optimisation: 
+$$\hat \beta^{Ridge}= argmin_\beta \{\sum_{i=1}^n(y_i-\beta_0
+-\sum_{j=1}^p x_{ij}\beta_j)^2\}$$
+
+sous la contrainte de $$\sum_{j=1}^p \beta^2_j \leq t$$.
+
+## La méthode du Lasso
+- Elle se base base sur la norme $L_1$.
+
+- La pénalité: $p(\beta)=||\beta||_1$ avec $||\beta||_1 = \sum_{i=1}^{p} |\beta_i|$.
+
+- le problème d'optimisation: 
+$$\hat\beta^{Lasso}= argmin_\beta \{\sum_{i=1}^n(y_i-\beta_0 -\sum_{j=1}^p x_{ij}\beta_j)^2\}$$
+
+sous la contrainte de $$\sum_{j=1}^p |\beta|_j \leq t$$.
+
+- Par un calcul analytique, la solution de ce problème est donnée par
+
+$$\hat\beta^{lasso}_j=signe\{\hat\beta^{MCO}_j\}(|\hat\beta^{MCO}_j|-\lambda)_+$$
+
+## La méthode Elastic Net
+- Elle combine les deux normes ($L_1$ et $L_2$).
+
+- Sa pénalité: $p(\beta)=\lambda_1 ||\beta||_1 +\lambda_2 ||\beta||^2_2$.
+
+- Le problème d'optimisation:
+$$\hat\beta^{EN}= argmin_\beta\{||y-X\beta||^2\ + \lambda_1 ||\beta||_1 +\lambda_2 ||\beta||^2_2 \}$$
+
+## Comparaison des méthodes de régularisation
+![Comparaison des trois méthodes](C:/Users/HARROUCH Sofia/Documents/work/etude/Ulaval/HIVER 2018/p1 presentation/acp-parcimonieuse/presentation/images/comparaison des méthodes.png)
+
+## Comparaison des méthodes de régularisation
+![Comparaison des trois méthodes](C:/Users/HARROUCH Sofia/Documents/work/etude/Ulaval/HIVER 2018/p1 presentation/acp-parcimonieuse/presentation/images/Pénalites.png)
+
+
+## SCoTLASS
+
+- Soit X le jeu de donné- es $X=(X_{1}, .., X_{p})^{T}$.
+- $R= corr(X)$ sa matrice de corrélation.
+- Les composantes principales: pour $(k=1, ...,p)$ 
+$$Y_{k}= \alpha'_{k} X = \sum_{i=1}^{p} \alpha_{ki} X_{i}$$
+
+- la variance de l'axe principale $Y_{k}$: 
+$$var(Y_{k})=\alpha'_{k}* R * \alpha_{k}$$
+
+## SCoTLASS
+Le problème d'optimisation:
+$$max_{\alpha_1}F(\alpha_k) = \alpha_k' R \alpha_k$$
+$$\alpha'_k \alpha_k = 1 \qquad \forall k $$
+$$\text{cov(}\alpha_h'X, \alpha_k'X) = 0 \qquad\forall k  \geq 2 \text{ et } h < k$$
+
+Sous la contrainte
+$$\sum_{j=1}^{p} |\alpha_{kj}| \leq t$$
+
+
+## SCoTLASS : le choix de t
+
+1. pour $t \geq \sqrt{p}$, on a l'ACP.
+2. pour $t \leq 1$, il n'existe pas de solution.
+3. pour $t=1$, on a exactement une valeur non nulle de $a_{kj}$ pour chaque k.
+
+## SCoTLASS
+![Scotlass bidimensionnel, tirée de T. JOLLIFFE 2003](C:/Users/HARROUCH Sofia/Documents/work/etude/Ulaval/HIVER 2018/p1 presentation/acp-parcimonieuse/presentation/images/scotlass.png)
+
+## SCoTLASS : Inconvénients
+- choix de t peu évident
+
+- problème non convexe
+
+- Calculs difficiles
+
+## SPCA: Sparse Principal Component Analysis
+
+- Une méthode qui permet la reconstitution des composantes et les facteurs principaux en se basant sur l'analogie entre l'ACP et la regression Ridge, et sur la propriété de l'erreur de reconstruction
+
+## SPCA: la méthode simple
+
+- Soit $Y_k =\alpha'_k X$ la kième composante principale obtenu à partir d'une ACP (une combinaison linéaires des variables initiales).
+
+- ces coefficients de saturation $\alpha_k$ peuvent aussi être obtenu en faisant une regression multiple de la composante principale sur les $p$ variables initiales ($Y_k = X\beta + \epsilon$).
+
+## SPCA: la méthode simple
+- La reconstruction : Pour éviter tout problème de contruction des axes, on ajoute la pénalité de Ridge $L_2$, le problème d'optimisation devient:
+$$\hat\beta = argmin_\beta ||Y_k -X\beta||+\lambda||\beta||^2+\lambda_1||\beta||_1 \quad(1.1)$$
+
+- La parcimonie: On rajoute la pénalité du Lasso $L_1$ pour avoir des axes parcimonieux. Le problème d'optimisation devient:
+$$\hat\beta = argmin_\beta ||Y_k -X\beta||+\lambda||\beta||^2+\lambda_1||\beta||_1 \quad(1.1)$$
+
+- la kième composante principale approximée est $X \hat V_k= X \frac{\hat\beta}{||\hat \beta||}$.
+
+## SPCA: la méthode simple
+- Une technique que se base essentiellement sur les résultats de l'ACP.
+
+## SPCA: la généralisation
+- Soient:
++ $\mathbf{X}$ la matrice d'observations, $x_i$ la ième ligne de cette matrice
+
++ $A_{p\times k}=[\alpha_1,\alpha_2,...,\alpha_k]$ les k premières composantes principales.
+
++ $B_{p\times k}=[\beta_1,\beta_2,....,\beta_k]$ les k premières composantes principales estimées de tel sorte que les composantes principales soient parcimonieuses
+
+## SPCA: la généralisation
+Le théorème 1 suivant montre que le problème de l'ACP peut se transformer en un problème de regression.
+
+- **Théorème 1**
+Pour tout $\lambda>0$:
+$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2$$
+
+Sous la contrainte $$A^TA = I_{k*k}$$
+
+Alors pour $j=1,2,...,k$, $$\hat \beta_j \infty V_j$$
+
+
+## SPCA: la généralisation
+**Idée de la démonstration**
+
+En fait,
+$$\sum_{i=1}^n||x_i -AB^Tx_i||^2 =||X -XAB^T||^2$$
+
+$$= ||XA_{ \perp}||^2+ ||XA-XB^T||^2$$
+
+Pour A fixé, le problème de minimisation devient:
+
+$$(A, \hat B)=argmin_B C_{\lambda}(A,\hat B)= argmin_{A,B} \sum_{j=1}^{k}||X\alpha_j - X\beta_j||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2$$
+
+- Ce qui est équivalent à resoudre k regressions de Ridge indépendantes.
+
+- Cela nous donne $\hat\beta=(X^TX+\lambda I)^{-1}X^TXA$. 
+
+**NOTE:** En fait, si A correspond aux composantes principales classiques, alors on sait effectivement que B est proportionnelle à V (ce qu'on a montré dans la sous-section précédente).
+
+
+## SPCA: la généralisation
+- La parcimonie: on rajoute la pénalité de Lasso pour avoir la "sparsité" des coefficients de regression (ou de saturation).
+
+- Le problème devient:
+$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 +\lambda \sum_{j=1}^{k}||\beta_j||^2+ \sum_{j=1}^{k}\lambda_{1,j}||\beta_j||_1$$
+Sous la contrainte: $$A^TA=I_{k*k}$$
+
+
+## SPCA: algorithme alterné sur A et B
+1. On suppose que A est connu et on cherche B
+
+$$\hat\beta_j= argmin_{\beta_j} ||Y_j -X\beta_j||^2 +\lambda||\beta_j||^2+ \lambda_{1,j}||\beta_j||_1$$
+
+$$\hat\beta_j =arg min_{\beta_j}( \alpha_j-\beta_j)^TX^TX(\alpha_j-\beta_j)+\lambda||\beta_j||^2 +\lambda_1,j||\beta_j||_1$$
+
+## SPCA: algorithme alterné sur A et B
+2. On suppose que B est connu et on cherche A (on ignore la pénalité qui est liée aux termes de $B$)
+
+$$min_\beta \sum_{i=1}^k ||x_i-AB^Tx_i||^2 =||X-XBA^T||$$
+
+Sous la contrainte: $$A^TA=I_{k*k}$$
+
+Pour résoudre ce problème on aura besoin du théorème suivant:
+
+## SPCA: algorithme alterné sur A et B
+**Théorème 2**
+
+Soit $M_{n\times p}$ et $N_{n\times k}$ deux matrices. On considère le problème de minimisation suivant
+$$\hat A =argmin_A||M-NA^T||$$
+
+Sous la contrainte
+$$A^TA=I_{k*k}$$
+
+La décomposition en valeurs singulières de $M^TN$ est $UDV^T$, donc $$\hat A= UV^T$$.
+
+## SPCA: algorithme alterné sur A et B
+La solution obtenue en utilisant le théorème 2:
+On calcule la décomposition en valeurs singulières (SVD) $(X^TX)B=UDV^T$ et on pose $$\hat A = UV^T$$.
+
+
+## SPCA: Algorithme pour appliquer la méthode
+
+1. On commence par $A = [\alpha_1, \alpha_2, ..., \alpha_K]$ les coefficients de saturation des K premières composantes principales.
+
+2. Sachant $A= [\alpha_{1}, ...,\alpha_{k}]$, on résout le problème
+$$\beta_j =arg min_ \beta(\alpha_j-\beta)^TX^TX(\alpha_j-\beta)+\lambda||\beta||^2 +\lambda_1,j||\beta||_1$$
+
+pour $j=1, 2, ..., k$. Cela nous permet d'obtenir une estimation de $B$.
+
+3. Pour une matrice $B=[\beta_1, \beta_2, ..., \beta_k]$ fixée, on calcule la décomposition de la matrice en valeur singulière (SVD) de $X^TXB= UDV^T$. Par la suite on met A à jour, ce qui donne $A= UV^T$.
+
+4. On répète les étapes 2-3 jusqu'à la convergence.
+
+5. On normalise V, $\hat V_j = \frac{\beta_j}{||\beta_j||}$
+
+Les $V_j$ sont les nouvelles composantes principales parcimonieuses.
 
 ## Justification de la méthodologie
+
+**Le but de l'exemple:**
+
+- La comparaison de la performance de l'ACP parcimonieuse par rapport à la méthode de rotation.
+
+Pour ce, on Crée 3 structures de vecteurs et valeurs propres différentes que nous cherchons à retrouver à travers de simulations.
+
+**La méthodologie:**
+
+1. Création des structure de vecteurs et valeurs propres.
+
+2. Trouver la structure de corrélation.
+
+3. Simuler les données; simuler des lois normales.
+
+4. Appliquer la méthode de l'ACP et faire la rotation varimax.
+
+5. Appliquer la méthode de la SPCA
+
+6. Comparer les résultats de ces deux méthodes.
+
+##La méthodologie:
+
+1. Création des structure de vecteurs et valeurs propres.
+
++ La première: est construite de manière à ce qu’il y aille 3 variables plus importantes et 3 variables moins importantes dans chacune des composantes. 
+
++ La troisième structure est construite de manière à avoir des coefficients desaturation proches les uns des autres pour chacune des composantes. 
+
++ la deuxième structure est une intermédiaire entre les deux structures décrites plus tôt.
+
+##La méthodologie:
+
+1. Création des structure de vecteurs et valeurs propres.
+
+
+```{r structure_blocks, echo=FALSE}
+# Structure en blocks
+library(data.table)
+vectors_blocks <- matrix(c(0.096, 0.082, 0.08, 0.594, 0.584, 0.533, -0.537, -0.565, -0.608, 0.085, 0.096, 0.074, 0.759, -0.599, -0.119, -0.074, -0.114, 0.18, -0.12, 0.231, -0.119, -0.308, -0.418, 0.805, 0.335, 0.511, -0.771, 0.069, 0.052, -0.157, -0.021, -0.013, 0.016, 0.731, -0.678, -0.069), nrow = 6, ncol = 6)
+valeurs_blocks <- c(1.8367, 1.64, 0.751, 0.659, 0.607, 0.506)
+data_structure_blocks <- data.table(
+  variable = paste0("x", seq(1,6)),
+  PC1 = vectors_blocks[,1],
+  PC2 = vectors_blocks[,2],
+  PC3 = vectors_blocks[,3],
+  PC4 = vectors_blocks[,4],
+  PC5 = vectors_blocks[,5],
+  PC6 = vectors_blocks[,6]
+)
+knitr::kable(data_structure_blocks, format = "latex", booktabs = T, row.names = FALSE, align = rep("c", 6), caption = "Coefficients de saturation théoriques de la structure en blocks.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+```{r structure_int, echo=FALSE}
+# Structure intermediaire
+vectors_intermediaires <- matrix(c(0.224, 0.253, 0.227, 0.553, 0.521, 0.507, -0.509, -0.519, -0.553, 0.249, 0.254, 0.199, 0.604, -0.361, -0.246, -0.249, -0.258, 0.561, 0.297, -0.644, 0.377, -0.052, 0.451, -0.384, -0.327, -0.341, 0.608, 0.262, -0.509, 0.281, 0.361, -0.064, -0.267, 0.706, -0.367, -0.402), nrow = 6, ncol = 6)
+valeurs_intermediaires <- c(1.795, 1.674, 0.796, 0.618, 0.608, 0.510)
+data_structure_intermediaire <- data.table(
+  variable = paste0("x", seq(1,6)),
+  PC1 = vectors_intermediaires[,1],
+  PC2 = vectors_intermediaires[,2],
+  PC3 = vectors_intermediaires[,3],
+  PC4 = vectors_intermediaires[,4],
+  PC5 = vectors_intermediaires[,5],
+  PC6 = vectors_intermediaires[,6]
+)
+knitr::kable(data_structure_intermediaire, format = "latex", booktabs = T, row.names = FALSE, align = rep("c", 6), caption = "Coefficients de saturation théoriques de la structure intermédiaire.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+```{r structure_platte, echo=FALSE}
+# Structure platte
+vectors_plattes <- matrix(c(-0.455, -0.439, -0.415, 0.434, 0.301, 0.385, 0.336, 0.370, 0.422, 0.458, 0.435, 0.416, -0.087, -0.212, 0.378, 0.040, -0.697, 0.563, 0.741, -0.630, -0.110, -0.136, 0.114, 0.104, -0.328, -0.445, 0.697, -0.167, 0.356, -0.234, 0.125, -0.175, 0.099, 0.744, -0.306, -0.545), nrow = 6, ncol = 6)
+valeurs_plattes <- c(1.841, 1.709, 0.801, 0.649, 0.520, 0.480)
+data_structure_plattes <- data.table(
+  variable = paste0("x", seq(1,6)),
+  PC1 = vectors_plattes[,1],
+  PC2 = vectors_plattes[,2],
+  PC3 = vectors_plattes[,3],
+  PC4 = vectors_plattes[,4],
+  PC5 = vectors_plattes[,5],
+  PC6 = vectors_plattes[,6]
+)
+knitr::kable(data_structure_plattes, format = "latex", booktabs = T, row.names = FALSE, align = rep("c", 6), caption = "Coefficients de saturation théoriques de la structure uniforme.") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+##La méthodologie:
+
+2. Trouver la structure de corrélation.
+
+La matrice de corrélation est obtenue par : $$\Sigma = A DA^{-1}$$
+
+Tel que:
+
+- $A$: une matrice et vecteurs propres
+
+- $D$: est une matrice diagonale construite avec les valeurs propres($I$)
+
+##La méthodologie:
+
+2. Trouver la structure de corrélation.
+
+```{r simulations, echo=FALSE}
+
+# Load packages -----------------------------------------------------------
+
+library(propagate)
+library(psych)
+library(elasticnet)
+
+# Simuler les données -----------------------------------------------------
+
+cov_function <- function(vecteurs_propres, valeurs_propres, cov = TRUE){
+  
+  n <- nrow(vecteurs_propres)
+  S = vecteurs_propres
+  M = matrix(rep(0, n^2), ncol = n, nrow = n)
+  diag(M) <- valeurs_propres
+  
+  cor = round(S %*% M %*% solve(S), 6)
+  
+  for (j in 1:ncol(cor)) {
+    for (i in 1:j) {
+      if (cor[i, j] != diag(cor)[j]){
+        cor[i, j] = cor[j, i]
+      }
+    }
+  }
+  
+  if (cov){
+    cov = round(propagate::cor2cov(C = cor, var = valeurs_propres), 6)
+  } else {
+    round(cor, 6)
+  }
+}
+
+cov_blocks <- cov_function(vecteurs_propres = vectors_blocks, valeurs_propres = valeurs_blocks)
+cov_intermediaire <- cov_function(vecteurs_propres = vectors_intermediaires, valeurs_propres = valeurs_intermediaires)
+cov_platte <- cov_function(vecteurs_propres = vectors_plattes, valeurs_propres = valeurs_plattes)
+
+data_blocks <- rmvnorm(100000, mean = rep(0, 6), sigma = cov_blocks)
+data_intermediaire <- rmvnorm(100000, mean = rep(0, 6), sigma = cov_intermediaire)
+data_platte <- rmvnorm(100000, mean = rep(0, 6), sigma = cov_platte)
+```
+
+##La méthodologie:
+3. Il est possible de simuler des lois normales multivariées à partir de cette matrice de corrélation.
+
+
+## La méthodologie:
+
+4. Appliquer la méthode de l'ACP et faire la rotation varimax.
+```{r echo=FALSE}
+# Appliquer les différentes méthodes --------------------------------------
+
+acp_blocks <- prcomp(cor(data_blocks), center = FALSE)
+rpca_blocks <- principal(cor(data_blocks), nfactors = 6, rotate = "varimax")
+spca_blocks <- spca(cor(data_blocks), K = 6, para = rep(3,6), sparse = "varnum", type = "Gram")
+
+acp_intermediaire <- prcomp(cor(data_intermediaire), center = FALSE)
+rpca_intermediaire <- principal(cor(data_intermediaire), nfactors = 6, rotate = "varimax")
+spca_intermediaire <- spca(cor(data_intermediaire), K = 6, para = rep(0.01, 6), sparse = "penalty", type = "Gram")
+
+acp_platte <- prcomp(cor(data_platte), center = FALSE)
+rpca_platte <- principal(cor(data_platte), nfactors = 6, rotate = "varimax")
+spca_platte <- spca(cor(data_platte), K = 6, para = rep(0.01, 6), sparse = "penalty", type = "Gram")
+```
+
+##La méthodologie:
+
+5. Appliquer la méthode de la SPCA
+
+
+##La méthodologie:
+
+6. Comparer les résultats de ces deux méthodes.
+
+On calcule les distances entre les vecteurs de coefficients de saturation trouvés par les deux méthodes avec les "vrais" vecteurs de coefficients définit dans les 3 structures différentes.
+
+```{r echo=FALSE}
+
+# Analyser les performances -----------------------------------------------
+
+dist_loadings <- function(x,y){
+  sqrt(1 - (t(x) %*% y)^2)
+}
+
+# Structure blocks
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_blocks$rotation[,x], vectors_blocks[,x])
+# })
+dist_rpca_blocks <- sapply(1:6, function(x) {
+  dist_loadings(rpca_blocks$loadings[,x], vectors_blocks[,x])
+})
+dist_spca_blocks <- sapply(1:6, function(x) {
+  dist_loadings(spca_blocks$loadings[,x], vectors_blocks[,x])
+})
+
+# Structure intermediaire
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_intermediaire$rotation[,x], vectors_intermediaires[,x])
+# })
+dist_rpca_int <- sapply(1:6, function(x) {
+  dist_loadings(rpca_intermediaire$loadings[,x], vectors_intermediaires[,x])
+})
+dist_spca_int <- sapply(1:6, function(x) {
+  dist_loadings(spca_intermediaire$loadings[,x], vectors_intermediaires[,x])
+})
+
+# Structure platte
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_plattes$rotation[,x], vectors_plattes[,x])
+# })
+dist_rpca_platte <- sapply(1:6, function(x) {
+  dist_loadings(rpca_platte$loadings[,x], vectors_plattes[,x])
+})
+dist_spca_platte <- sapply(1:6, function(x) {
+  dist_loadings(spca_platte$loadings[,x], vectors_plattes[,x])
+})
+```
+
+```{r cor_plot, echo=FALSE, fig.align='center', fig.cap=}
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+colnames(data_blocks) <- paste0("Var", seq(1:6))
+colnames(data_intermediaire) <- paste0("Var", seq(1:6))
+colnames(data_platte) <- paste0("Var", seq(1:6))
+
+cor_blocks <- round(cor(data_blocks), 2)
+cor_intermediaires <- round(cor(data_intermediaire), 2)
+cor_platte <- round(cor(data_platte), 2)
+
+melted_cor_blocks <- data.table(melt(cor_blocks))[, structure := "Block"]
+melted_cor_int <- data.table(melt(cor_intermediaires))[, structure := "Intermédiaire"]
+melted_cor_platte <- data.table(melt(cor_platte))[, structure := "Uniforme"]
+
+rbindlist(list(melted_cor_blocks, melted_cor_int, melted_cor_platte), use.names = TRUE, fill = FALSE) %>% 
+  ggplot(aes(x = Var1, y = Var2, fill = value)) + 
+    geom_tile() +
+    facet_grid(. ~ structure) +
+    scale_fill_continuous("Corrélation") +
+    theme(legend.position = "bottom", axis.title.x = element_blank(), axis.title.y = element_blank())
+```
+
+
+## Résultats:
+
+la méthode d'analyse en composante principale parcimonieuse (SPCA) retrouve des coefficients de corrélation qui sont plus près de ceux définis au départ, et ce, pour les $3$ types de structure.
+
+##La méthodologie:
+3. Il est possible de simuler des lois normales multivariées à partir de cette matrice de corrélation.
+
+
+## La méthodologie:
+
+4. Appliquer la méthode de l'ACP et faire la rotation varimax.
+```{r}
+# Appliquer les différentes méthodes --------------------------------------
+
+acp_blocks <- prcomp(cor(data_blocks), center = FALSE)
+rpca_blocks <- principal(cor(data_blocks), nfactors = 6, rotate = "varimax")
+spca_blocks <- spca(cor(data_blocks), K = 6, para = rep(3,6), sparse = "varnum", type = "Gram")
+
+acp_intermediaire <- prcomp(cor(data_intermediaire), center = FALSE)
+rpca_intermediaire <- principal(cor(data_intermediaire), nfactors = 6, rotate = "varimax")
+spca_intermediaire <- spca(cor(data_intermediaire), K = 6, para = rep(0.01, 6), sparse = "penalty", type = "Gram")
+
+acp_platte <- prcomp(cor(data_platte), center = FALSE)
+rpca_platte <- principal(cor(data_platte), nfactors = 6, rotate = "varimax")
+spca_platte <- spca(cor(data_platte), K = 6, para = rep(0.01, 6), sparse = "penalty", type = "Gram")
+```
+
+##La méthodologie:
+
+5. Appliquer la méthode de la SPCA
+
+
+##La méthodologie:
+
+6. Comparer les résultats de ces deux méthodes.
+
+On calcule les distances entre les vecteurs de coefficients de saturation trouvés par les deux méthodes avec les "vrais" vecteurs de coefficients définit dans les 3 structures différentes.
+
+```{r}
+
+# Analyser les performances -----------------------------------------------
+
+dist_loadings <- function(x,y){
+  sqrt(1 - (t(x) %*% y)^2)
+}
+
+# Structure blocks
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_blocks$rotation[,x], vectors_blocks[,x])
+# })
+dist_rpca_blocks <- sapply(1:6, function(x) {
+  dist_loadings(rpca_blocks$loadings[,x], vectors_blocks[,x])
+})
+dist_spca_blocks <- sapply(1:6, function(x) {
+  dist_loadings(spca_blocks$loadings[,x], vectors_blocks[,x])
+})
+
+# Structure intermediaire
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_intermediaire$rotation[,x], vectors_intermediaires[,x])
+# })
+dist_rpca_int <- sapply(1:6, function(x) {
+  dist_loadings(rpca_intermediaire$loadings[,x], vectors_intermediaires[,x])
+})
+dist_spca_int <- sapply(1:6, function(x) {
+  dist_loadings(spca_intermediaire$loadings[,x], vectors_intermediaires[,x])
+})
+
+# Structure platte
+# sapply(1:6, function(x) {
+#   dist_loadings(acp_plattes$rotation[,x], vectors_plattes[,x])
+# })
+dist_rpca_platte <- sapply(1:6, function(x) {
+  dist_loadings(rpca_platte$loadings[,x], vectors_plattes[,x])
+})
+dist_spca_platte <- sapply(1:6, function(x) {
+  dist_loadings(spca_platte$loadings[,x], vectors_plattes[,x])
+})
+```
+
+```{r cor_plot, echo = FALSE, fig.align = 'center', fig.cap = "Représentations des différentes matrices de corrélation pour les données simulées à partir des 3 différentes structures."}
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+colnames(data_blocks) <- paste0("Var", seq(1:6))
+colnames(data_intermediaire) <- paste0("Var", seq(1:6))
+colnames(data_platte) <- paste0("Var", seq(1:6))
+
+cor_blocks <- round(cor(data_blocks), 2)
+cor_intermediaires <- round(cor(data_intermediaire), 2)
+cor_platte <- round(cor(data_platte), 2)
+
+melted_cor_blocks <- data.table(melt(cor_blocks))[, structure := "Block"]
+melted_cor_int <- data.table(melt(cor_intermediaires))[, structure := "Intermédiaire"]
+melted_cor_platte <- data.table(melt(cor_platte))[, structure := "Uniforme"]
+
+rbindlist(list(melted_cor_blocks, melted_cor_int, melted_cor_platte), use.names = TRUE, fill = FALSE) %>% 
+  ggplot(aes(x = Var1, y = Var2, fill = value)) + 
+    geom_tile() +
+    facet_grid(. ~ structure) +
+    scale_fill_continuous("Corrélation") +
+    theme(legend.position = "bottom", axis.title.x = element_blank(), axis.title.y = element_blank())
+```
+
+
+## Résultats:
+
+la méthode d'analyse en composante principale parcimonieuse (SPCA) retrouve des coefficients de corrélation qui sont plus près de ceux définis au départ, et ce, pour les $3$ types de structure.
 
 ## Jeu de données pitprops
 
