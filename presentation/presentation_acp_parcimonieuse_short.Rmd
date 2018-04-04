@@ -557,16 +557,16 @@ print(data_distance_blocks)
 
 Voici les résultats pour la structure uniforme.
 
-```{r print_results_int, echo = TRUE}
-print(data_distance_int)
+```{r print_results_platte, echo = TRUE}
+print(data_distance_platte)
 ```
 
 ## Résultats: Structure intermédiaire
 
 Voici les résultats pour la structure intermédiaire.
 
-```{r print_results_platte, echo = TRUE}
-print(data_distance_platte)
+```{r print_results_int, echo = TRUE}
+print(data_distance_int)
 ```
 
 ## Analyse des résultats

@@ -142,13 +142,13 @@ pour $(k=1, ...,p)$. On note ensuite la variance de l'axe principale $Y_{k}$ par
 
 Le problème de maximisation de l'ACP pour conserver la plus grande quantité d'information possible est donc donné par le paramètre $\alpha$ qui maximise cette fonction:
 $$
-F(\alpha_1) = \alpha_1' R \alpha_1
+F(\alpha_1) = \alpha_k' R \alpha_k
 $$
 avec les contraintes suivantes:
 
 \begin{gather*}
   \alpha'_k \alpha_k = 1 \qquad \forall k \\
-  \text{cov(}\alpha_1'X, \alpha_2'X) = 0 \qquad\forall k  \geq 2 \text{ et } h \ne k
+  \text{cov(}\alpha_k'X, \alpha_h'X) = 0 \qquad\forall h  \geq 2 \text{ et } h \ne k
 \end{gather*}
 
 La méthode du LASSO appliquée à l'ACP (SCoTLASS) rajoute une troisième contrainte sur les coefficients des variables sur les différents axes des composantes:
@@ -202,9 +202,9 @@ Alors $\hat \beta_j \infty V_j$ pour $j=1,2,...,k$.
 Ce théorème nous permet de bien voir la transformation du problème d'optimisation.
 
 En fait,
-$$\sum_{i=1}^n||x_i -AB^Tx_i||^2 =||X -XAB^T||^2$$
+$$\sum_{i=1}^n||x_i -AB^Tx_i||^2 =||X -XBA^T||^2$$
 
-$$= ||XA_{ \perp}||^2+ ||XA-XB^T||^2$$
+$$= ||XA_{ \perp}||^2+ ||XA-XB||^2$$
 
 Comme $A$ est orthonormale, $A_{\perp}$ est une matrice quelconque orthonormale telle que $[A;A_{ \perp}]$ est $p\times p$ orthonormal.
 
