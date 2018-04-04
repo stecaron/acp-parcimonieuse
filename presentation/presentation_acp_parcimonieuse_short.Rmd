@@ -200,11 +200,7 @@ $$\hat\beta^{EN}= argmin_\beta\{||y-X\beta||^2\ + \lambda_1 ||\beta||_1 +\lambda
 
 ## Comparaison des méthodes de régularisation
 
-![](images/comparaison des méthodes.png)
-
-## Comparaison des méthodes de régularisation
-
-![](images/Pénalites.png)
+![](images/comparaison.png)
 
 ## SCoTLASS: Optimisation
  
@@ -274,6 +270,32 @@ Considérons la notation suivante:
 - $x_i$: la ième ligne de cette matrice
 - $A_{p\times k}=[\alpha_1,\alpha_2,...,\alpha_k]$: les k premières composantes principales
 - $B_{p\times k}=[\beta_1,\beta_2,....,\beta_k]$: les k premières composantes principales estimées de tel sorte que les composantes principales soient parcimonieuses
+
+
+
+## SPCA: La généralisation
+
+
+- Le problème d'optimisation devient:
+$$(\hat A, \hat B)= argmin_{A,B} \sum_{i=1}^n||x_i -AB^Tx_i||^2 \\+\lambda \sum_{j=1}^{k}||\beta_j||^2+ \sum_{j=1}^{k}\lambda_{1,j}||\beta_j||_1$$
+Sous la contrainte: $$A^TA=I_{k*k}$$
+
+
+## SPCA: Algorithme alterné sur A et B
+
+On suppose que A est connu et on cherche B
+
+$$\hat\beta_j= argmin_{\beta_j} ||Y_j -X\beta_j||^2 +\lambda||\beta_j||^2+ \lambda_{1,j}||\beta_j||_1$$
+
+$$\hat\beta_j =arg min_{\beta_j}( \alpha_j-\beta_j)^TX^TX(\alpha_j-\beta_j)+\lambda||\beta_j||^2 +\lambda_1,j||\beta_j||_1$$
+
+## SPCA: Algorithme alterné sur A et B
+
+On suppose que B est connu et on cherche A (on ignore la pénalité qui est liée aux termes de $B$)
+
+$$min_\beta \sum_{i=1}^k ||x_i-AB^Tx_i||^2 =||X-XBA^T||$$
+
+Sous la contrainte: $$A^TA=I_{k*k}$$
 
 ## SPCA: Algorithme
 
